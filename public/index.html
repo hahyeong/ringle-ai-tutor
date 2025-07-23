@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ringle AI 튜터</title>
+    <link href="css/styles.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🤖 Ringle AI 튜터</h1>
+            <p>AI와 함께하는 영어 학습</p>
+        </header>
+
+        <main>
+            <!-- 멤버십 현황 섹션 -->
+            <section class="membership-status">
+                <h2>멤버십 현황</h2>
+                <div id="membershipInfo" class="membership-card">
+                    <div class="loading">멤버십 정보를 불러오는 중...</div>
+                </div>
+            </section>
+
+            <!-- 기능 버튼들 -->
+            <section class="features">
+                <div class="feature-grid">
+                    <button id="conversationBtn" class="feature-btn" disabled>
+                        <div class="feature-icon">💬</div>
+                        <div class="feature-title">AI 대화</div>
+                        <div class="feature-desc">AI와 실시간 대화하기</div>
+                    </button>
+                    
+                    <button id="learningBtn" class="feature-btn" disabled>
+                        <div class="feature-icon">📚</div>
+                        <div class="feature-title">학습</div>
+                        <div class="feature-desc">구조화된 영어 학습</div>
+                    </button>
+                    
+                    <button id="analysisBtn" class="feature-btn" disabled>
+                        <div class="feature-icon">📊</div>
+                        <div class="feature-title">분석</div>
+                        <div class="feature-desc">학습 진도 분석</div>
+                    </button>
+                </div>
+            </section>
+
+            <!-- 멤버십 구매 섹션 -->
+            <section class="membership-purchase" id="purchaseSection" style="display: none;">
+                <h2>멤버십 구매</h2>
+                <div class="membership-options">
+                    <div class="membership-option">
+                        <h3>베이직 멤버십</h3>
+                        <div class="price">₩19,000 / 30일</div>
+                        <ul>
+                            <li>✅ 학습 기능</li>
+                            <li>❌ AI 대화</li>
+                            <li>❌ 학습 분석</li>
+                        </ul>
+                        <button class="purchase-btn" data-type="1">구매하기</button>
+                    </div>
+                    
+                    <div class="membership-option premium">
+                        <h3>프리미엄 멤버십</h3>
+                        <div class="price">₩49,000 / 60일</div>
+                        <ul>
+                            <li>✅ 학습 기능</li>
+                            <li>✅ AI 대화</li>
+                            <li>✅ 학습 분석</li>
+                        </ul>
+                        <button class="purchase-btn" data-type="2">구매하기</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- JavaScript 파일들 -->
+    <script src="js/api.js"></script>
+    <script src="js/membership.js"></script>
+    
+    <script>
+        // 페이지 로드시 멤버십 상태 확인
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('페이지 로드됨');
+            await checkMembershipStatus();
+        });
+    </script>
+</body>
+</html>
