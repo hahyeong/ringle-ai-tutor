@@ -116,28 +116,44 @@ async function sendMessage(message) {
     }
 }
 
-// AI 응답 생성 (Mock - 실제로는 LLM API 사용)
+// AI 응답 생성 (실제 OpenAI API 호출)
 async function generateAIResponse(userMessage) {
-    // 실제 구현에서는 OpenAI API나 Claude API를 호출
-    // 지금은 간단한 Mock 응답
-    
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            const responses = [
-                "That's interesting! Can you tell me more about that?",
-                "Great! How do you feel about this topic?",
-                "I understand. What would you like to practice next?",
-                "Excellent! Your English is improving. Let's continue our conversation.",
-                "That's a good point. What's your opinion on this matter?",
-                "Nice! Can you explain that in different words?",
-                "Perfect! Let's practice some more vocabulary related to this topic.",
-                "Wonderful! How would you use this in a real conversation?"
-            ];
-            
-            const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-            resolve(randomResponse);
-        }, 1000 + Math.random() * 2000); // 1-3초 랜덤 지연
-    });
+    try {
+        const response = await fetch('/api/v1/conversations/chat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                message: userMessage,
+                user_id: 1
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        
+        if (data.error) {
+            throw new Error(data.error);
+        }
+
+        return data.ai_response;
+        
+    } catch (error) {
+        console.error('AI API 호출 실패:', error);
+        
+        // Fallback to mock responses
+        const fallbackResponses = [
+            "I apologize, but I'm having trouble connecting right now. Could you try again?",
+            "Sorry, there seems to be a technical issue. Let's continue our conversation in a moment.",
+            "I'm experiencing some difficulties. Please try your message again!"
+        ];
+        
+        return fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)];
+    }
 }
 
 // 채팅에 메시지 추가
