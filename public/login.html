@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로그인 - Ringle AI 튜터</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #333;
+        }
+
+        .login-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .logo {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+
+        .login-title {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .login-subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .user-selection {
+            margin-bottom: 30px;
+        }
+
+        .user-option {
+            background: #f8f9fa;
+            border: 2px solid transparent;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+        }
+
+        .user-option:hover {
+            background: #e3f2fd;
+            border-color: #2196F3;
+            transform: translateY(-2px);
+        }
+
+        .user-option.selected {
+            background: #e3f2fd;
+            border-color: #2196F3;
+        }
+
+        .user-name {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .user-email {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .user-membership {
+            color: #4CAF50;
+            font-size: 0.8rem;
+            margin-top: 5px;
+        }
+
+        .login-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .login-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .demo-note {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: #856404;
+        }
+
+        .demo-note strong {
+            color: #533101;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo">🤖</div>
+        <h1 class="login-title">Ringle AI 튜터</h1>
+        <p class="login-subtitle">테스트할 사용자를 선택해주세요</p>
+        
+        <div class="user-selection" id="userSelection">
+            <div class="user-option" data-user-id="17">
+                <div class="user-name">테스트 사용자</div>
+                <div class="user-email">test@ringle.co.kr</div>
+                <div class="user-membership">✅ 베이직 멤버십 (학습 기능)</div>
+            </div>
+            
+            <div class="user-option" data-user-id="18">
+                <div class="user-name">프리미엄 사용자</div>
+                <div class="user-email">premium@ringle.co.kr</div>
+                <div class="user-membership">⭐ 프리미엄 멤버십 (모든 기능)</div>
+            </div>
+            
+            <div class="user-option" data-user-id="19">
+                <div class="user-name">횟수제 사용자</div>
+                <div class="user-email">usage@ringle.co.kr</div>
+                <div class="user-membership">🎯 횟수제 멤버십 (대화 10회)</div>
+            </div>
+            
+            <div class="user-option" data-user-id="20">
+                <div class="user-name">멤버십 없음</div>
+                <div class="user-email">guest@example.com</div>
+                <div class="user-membership">❌ 활성 멤버십 없음</div>
+            </div>
+        </div>
+        
+        <button class="login-btn" id="loginBtn" disabled>로그인</button>
+        
+        <div class="demo-note">
+            <strong>데모 안내:</strong><br>
+            각 사용자별로 다른 멤버십 상태를 테스트할 수 있습니다.<br>
+            • 베이직: 학습 기능만 사용 가능<br>
+            • 프리미엄: 모든 기능 사용 가능<br>
+            • 횟수제: 대화 기능 제한적 사용<br>
+            • 멤버십 없음: 구매 화면 표시
+        </div>
+    </div>
+
+    <script>
+        let selectedUserId = null;
+        
+        // 사용자 선택 이벤트 처리
+        document.getElementById('userSelection').addEventListener('click', function(e) {
+            const userOption = e.target.closest('.user-option');
+            if (!userOption) return;
+            
+            // 기존 선택 해제
+            document.querySelectorAll('.user-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            
+            // 새로운 선택
+            userOption.classList.add('selected');
+            selectedUserId = userOption.getAttribute('data-user-id');
+            
+            // 로그인 버튼 활성화
+            document.getElementById('loginBtn').disabled = false;
+        });
+        
+        // 로그인 버튼 클릭 처리
+        document.getElementById('loginBtn').addEventListener('click', function() {
+            if (selectedUserId === null) return;
+            
+            // localStorage에 선택된 사용자 ID 저장
+            localStorage.setItem('currentUserId', selectedUserId);
+            
+            // 사용자 정보도 저장 (옵션)
+            const userInfo = getUserInfo(selectedUserId);
+            localStorage.setItem('currentUserInfo', JSON.stringify(userInfo));
+            
+            // 메인 페이지로 이동
+            window.location.href = 'index.html';
+        });
+        
+        // 사용자 정보 반환 함수
+        function getUserInfo(userId) {
+            const users = {
+                '17': { name: '테스트 사용자', email: 'test@ringle.co.kr', membership: '베이직' },
+                '18': { name: '프리미엄 사용자', email: 'premium@ringle.co.kr', membership: '프리미엄' },
+                '19': { name: '횟수제 사용자', email: 'usage@ringle.co.kr', membership: '횟수제' },
+                '20': { name: '멤버십 없음', email: 'guest@example.com', membership: '없음' }
+            };
+            return users[userId] || users['0'];
+        }
+        
+        // 페이지 로드시 기존 로그인 상태 확인
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentUserId = localStorage.getItem('currentUserId');
+            if (currentUserId) {
+                console.log('기존 로그인 상태:', currentUserId);
+                // 필요시 자동으로 메인 페이지로 이동
+                // window.location.href = 'index.html';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,9 +1,11 @@
 Rails.application.routes.draw do
   # API 라우트
-  namespace :api do # /api, Api::
-    namespace :v1 do # /api/v1, Api::V1::
-      resources :users do  # pi::V1::UsersController
+  namespace :api do
+    namespace :v1 do
+      resources :users do
         resources :memberships, only: [ :index, :show, :create, :destroy ]
+        # 멤버십 상태 확인 엔드포인트를 users 리소스 안에 추가
+        get :membership_status, on: :member
       end
 
       resources :membership_types, only: [ :index, :show ]
@@ -13,9 +15,6 @@ Rails.application.routes.draw do
           post :chat
         end
       end
-
-      # 멤버십 상태 확인 엔드포인트
-      get "users/:user_id/membership_status", to: "memberships#status"
 
       # 결제 API (Mock)
       post "payments/process", to: "payments#process"

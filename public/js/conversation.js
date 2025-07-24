@@ -2,6 +2,14 @@
 
 // 대화 초기화
 function initConversation() {
+    // 로그인 확인
+    if (!getCurrentUserId()) {
+        return; // 로그인 페이지로 리다이렉트됨
+    }
+    
+    // 현재 사용자 정보 표시
+    displayCurrentUserInHeader();
+    
     // 오디오 지원 확인
     const audioSupport = checkAudioSupport();
     
@@ -20,6 +28,34 @@ function initConversation() {
     
     // 멤버십 확인
     checkConversationPermission();
+}
+
+// 헤더에 현재 사용자 정보 표시
+function displayCurrentUserInHeader() {
+    const userInfo = getCurrentUserInfo();
+    if (!userInfo) return;
+    
+    const header = document.querySelector('.conversation-header');
+    if (header && !header.querySelector('.user-info')) {
+        const userInfoDiv = document.createElement('div');
+        userInfoDiv.className = 'user-info';
+        userInfoDiv.style.cssText = `
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.2);
+            padding: 10px 15px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+        `;
+        
+        userInfoDiv.innerHTML = `
+            <div>${userInfo.name}</div>
+            <div style="opacity: 0.8;">${userInfo.membership}</div>
+        `;
+        
+        header.appendChild(userInfoDiv);
+    }
 }
 
 // 이벤트 리스너 설정
@@ -59,7 +95,13 @@ function setupEventListeners() {
 // 대화 권한 확인
 async function checkConversationPermission() {
     try {
-        const membershipData = await getMembershipStatus(7);  // 1 → 6으로 변경
+        const membershipData = await getMembershipStatus();
+        
+        if (!membershipData) {
+            showError('로그인이 필요합니다.');
+            disableConversation();
+            return;
+        }
         
         if (!membershipData.has_membership) {
             showError('활성화된 멤버십이 없습니다. 홈 화면에서 멤버십을 구매해주세요.');
@@ -97,15 +139,27 @@ async function sendMessage(message) {
     showLoadingIndicator(true);
     
     try {
-        // Mock AI 응답 (실제로는 OpenAI/Claude API 사용)
-        const aiResponse = await generateAIResponse(message);
+        // AI 응답 생성 (업데이트된 API 사용)
+        const response = await sendMessage(message);
         
-        // AI 응답 표시
-        addMessageToChat('ai', aiResponse);
-        
-        // TTS로 AI 응답 재생
-        if (window.speechSynthesis) {
-            speakText(aiResponse);
+        if (response && response.ai_response) {
+            // AI 응답 표시
+            addMessageToChat('ai', response.ai_response);
+            
+            // 사용 횟수 정보 표시 (횟수제 멤버십인 경우)
+            if (response.usage_remaining !== undefined) {
+                console.log(`남은 사용 횟수: ${response.usage_remaining}회`);
+                if (response.usage_remaining <= 3) {
+                    showUsageWarning(response.usage_remaining);
+                }
+            }
+            
+            // TTS로 AI 응답 재생
+            if (window.speechSynthesis) {
+                speakText(response.ai_response);
+            }
+        } else {
+            throw new Error('AI 응답을 받을 수 없습니다.');
         }
         
     } catch (error) {
@@ -116,51 +170,13 @@ async function sendMessage(message) {
     }
 }
 
-// AI 응답 생성 (실제 OpenAI API 호출)
-async function generateAIResponse(userMessage) {
-    try {
-        const response = await fetch('/api/v1/conversations/chat', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                message: userMessage,
-                user_id: 1
-            })
-        });
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
+// 사용 횟수 경고 표시
+function showUsageWarning(remaining) {
+    const warningMessage = remaining > 0 
+        ? `⚠️ 남은 대화 횟수: ${remaining}회`
+        : '❌ 대화 횟수가 모두 소진되었습니다.';
         
-        if (data.error) {
-            throw new Error(data.error);
-        }
-
-        // API 연결 상태 표시
-        if (data.note) {
-            console.log('⚠️ Fallback 모드:', data.note);
-        } else {
-            console.log('✅ OpenAI API 연결 성공');
-        }
-
-        return data.ai_response;
-        
-    } catch (error) {
-        console.error('AI API 호출 실패:', error);
-        
-        // Fallback to mock responses
-        const fallbackResponses = [
-            "I apologize, but I'm having trouble connecting right now. Could you try again?",
-            "Sorry, there seems to be a technical issue. Let's continue our conversation in a moment.",
-            "I'm experiencing some difficulties. Please try your message again!"
-        ];
-        
-        return fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)];
-    }
+    addMessageToChat('ai', warningMessage);
 }
 
 // 채팅에 메시지 추가

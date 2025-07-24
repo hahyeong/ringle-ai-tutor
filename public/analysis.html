@@ -204,7 +204,13 @@
         document.addEventListener('DOMContentLoaded', async function() {
             try {
                 // 멤버십 상태 확인
-                const response = await fetch('/api/v1/users/7/membership_status');
+                const currentUserId = localStorage.getItem('currentUserId');
+                if (!currentUserId) {
+                    alert('로그인이 필요합니다.');
+                    window.location.href = 'login.html';
+                    return;
+                }
+                const response = await fetch(`/api/v1/users/${currentUserId}/membership_status`);
                 const data = await response.json();
                 
                 if (!data.has_membership) {

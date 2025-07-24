@@ -80,9 +80,19 @@
     <script src="js/membership.js"></script>
     
     <script>
-        // 페이지 로드시 멤버십 상태 확인
+        // 페이지 로드시 로그인 확인 및 멤버십 상태 확인
         document.addEventListener('DOMContentLoaded', async function() {
             console.log('페이지 로드됨');
+            
+            // 로그인 확인
+            const currentUserId = getCurrentUserId();
+            if (!currentUserId) {
+                return; // api.js에서 자동으로 login.html로 리다이렉트
+            }
+            
+            console.log('현재 로그인된 사용자 ID:', currentUserId);
+            
+            // 멤버십 상태 확인
             await checkMembershipStatus();
         });
     </script>

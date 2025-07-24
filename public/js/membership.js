@@ -1,15 +1,16 @@
 // public/js/membership.js
 
-// 현재 사용자 ID (실제로는 로그인 시스템에서 가져와야 함)
-const CURRENT_USER_ID = 7;  // 1 → 6으로 변경
-
 // 멤버십 상태 확인
 async function checkMembershipStatus() {
     try {
         const membershipInfo = document.getElementById('membershipInfo');
         const purchaseSection = document.getElementById('purchaseSection');
         
-        const data = await getMembershipStatus(CURRENT_USER_ID);
+        // 현재 사용자 정보 표시
+        displayCurrentUser();
+        
+        const data = await getMembershipStatus();
+        if (!data) return; // 로그인되지 않은 경우
         
         if (data.has_membership) {
             // 활성 멤버십이 있는 경우
@@ -25,6 +26,48 @@ async function checkMembershipStatus() {
     } catch (error) {
         console.error('멤버십 상태 확인 실패:', error);
         displayError('멤버십 정보를 불러올 수 없습니다.');
+    }
+}
+
+// 현재 사용자 정보 표시
+function displayCurrentUser() {
+    const userInfo = getCurrentUserInfo();
+    if (!userInfo) return;
+    
+    // 기존 헤더에 사용자 정보 추가
+    const header = document.querySelector('header');
+    if (header && !header.querySelector('.user-info')) {
+        const userInfoDiv = document.createElement('div');
+        userInfoDiv.className = 'user-info';
+        userInfoDiv.style.cssText = `
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.2);
+            padding: 10px 20px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        `;
+        
+        userInfoDiv.innerHTML = `
+            <div style="text-align: right;">
+                <div style="font-weight: bold;">${userInfo.name}</div>
+                <div style="font-size: 0.9rem; opacity: 0.9;">${userInfo.email}</div>
+            </div>
+            <button onclick="logout()" style="
+                background: rgba(255,255,255,0.3);
+                border: none;
+                color: white;
+                padding: 8px 15px;
+                border-radius: 15px;
+                cursor: pointer;
+                font-size: 0.9rem;
+            ">로그아웃</button>
+        `;
+        
+        header.appendChild(userInfoDiv);
     }
 }
 
@@ -136,11 +179,12 @@ function getFeatureDisplayName(feature) {
 // 멤버십 구매 처리
 async function handlePurchase(membershipTypeId) {
     try {
-        const result = await purchaseMembership(CURRENT_USER_ID, membershipTypeId);
-        alert(result.message);
-        
-        // 페이지 새로고침하여 새 멤버십 상태 표시
-        window.location.reload();
+        const result = await purchaseMembership(null, membershipTypeId);
+        if (result) {
+            alert(result.message);
+            // 페이지 새로고침하여 새 멤버십 상태 표시
+            window.location.reload();
+        }
     } catch (error) {
         console.error('구매 실패:', error);
         alert('구매 처리 중 오류가 발생했습니다.');
@@ -149,6 +193,11 @@ async function handlePurchase(membershipTypeId) {
 
 // 구매 버튼 이벤트 리스너 등록
 document.addEventListener('DOMContentLoaded', function() {
+    // 로그인 확인
+    if (!getCurrentUserId()) {
+        return; // 로그인 페이지로 리다이렉트됨
+    }
+    
     const purchaseButtons = document.querySelectorAll('.purchase-btn');
     purchaseButtons.forEach(btn => {
         btn.addEventListener('click', function() {
