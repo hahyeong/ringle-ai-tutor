@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_07_23_042657) do
+ActiveRecord::Schema[7.2].define(version: 2025_07_24_073947) do
   create_table "membership_types", force: :cascade do |t|
     t.string "name"
     t.text "features"
@@ -26,6 +26,8 @@ ActiveRecord::Schema[7.2].define(version: 2025_07_23_042657) do
     t.datetime "expires_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "usage_count"
+    t.integer "usage_limit"
     t.index ["membership_type_id"], name: "index_memberships_on_membership_type_id"
     t.index ["user_id"], name: "index_memberships_on_user_id"
   end

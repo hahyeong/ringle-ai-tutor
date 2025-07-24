@@ -1,8 +1,8 @@
 Rails.application.routes.draw do
   # API 라우트
-  namespace :api do
-    namespace :v1 do
-      resources :users do
+  namespace :api do # /api, Api::
+    namespace :v1 do # /api/v1, Api::V1::
+      resources :users do  # pi::V1::UsersController
         resources :memberships, only: [ :index, :show, :create, :destroy ]
       end
 

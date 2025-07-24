@@ -59,7 +59,7 @@ function setupEventListeners() {
 // 대화 권한 확인
 async function checkConversationPermission() {
     try {
-        const membershipData = await getMembershipStatus(1);
+        const membershipData = await getMembershipStatus(7);  // 1 → 6으로 변경
         
         if (!membershipData.has_membership) {
             showError('활성화된 멤버십이 없습니다. 홈 화면에서 멤버십을 구매해주세요.');
@@ -138,6 +138,13 @@ async function generateAIResponse(userMessage) {
         
         if (data.error) {
             throw new Error(data.error);
+        }
+
+        // API 연결 상태 표시
+        if (data.note) {
+            console.log('⚠️ Fallback 모드:', data.note);
+        } else {
+            console.log('✅ OpenAI API 연결 성공');
         }
 
         return data.ai_response;

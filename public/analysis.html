@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>학습 분석 - Ringle AI 튜터</title>
+    <link href="css/styles.css" rel="stylesheet">
+    <style>
+        .analysis-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .analysis-header {
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+            color: white;
+            padding: 40px 20px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .stat-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #2196F3;
+            margin-bottom: 10px;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 1.1rem;
+        }
+        
+        .chart-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        
+        .chart-placeholder {
+            width: 100%;
+            height: 300px;
+            background: linear-gradient(45deg, #f0f0f0 25%, #e0e0e0 25%, #e0e0e0 50%, #f0f0f0 50%, #f0f0f0 75%, #e0e0e0 75%);
+            background-size: 20px 20px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            font-size: 1.2rem;
+        }
+        
+        .recommendation-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .recommendation-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border-left: 4px solid #4CAF50;
+            margin-bottom: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .recommendation-icon {
+            font-size: 1.5rem;
+            margin-right: 15px;
+        }
+        
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .back-button:hover {
+            background: rgba(255,255,255,0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="analysis-container">
+        <div class="analysis-header">
+            <a href="index.html" class="back-button">← 홈으로</a>
+            <h1>📊 학습 진도 분석</h1>
+            <p>AI가 분석한 당신의 영어 학습 현황을 확인하세요!</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">💬</div>
+                <div class="stat-number">47</div>
+                <div class="stat-label">총 대화 횟수</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">⭐</div>
+                <div class="stat-number">85</div>
+                <div class="stat-label">평균 점수</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">🔥</div>
+                <div class="stat-number">12</div>
+                <div class="stat-label">연속 학습일</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">📈</div>
+                <div class="stat-number">+15%</div>
+                <div class="stat-label">지난 주 대비 향상</div>
+            </div>
+        </div>
+
+        <div class="chart-section">
+            <h2>주간 학습 진도</h2>
+            <div class="chart-placeholder">
+                📈 실제 서비스에서는 여기에 상세한 차트가 표시됩니다
+                <br>
+                (Chart.js, D3.js 등을 활용한 시각화)
+            </div>
+        </div>
+
+        <div class="recommendation-section">
+            <h2>🎯 AI 추천 학습 계획</h2>
+            
+            <div class="recommendation-item">
+                <div class="recommendation-icon">📚</div>
+                <div>
+                    <strong>문법 집중 학습</strong>
+                    <br>
+                    현재 시제 사용에서 정확도가 73%입니다. 현재/과거/미래 시제 연습을 추천합니다.
+                </div>
+            </div>
+            
+            <div class="recommendation-item">
+                <div class="recommendation-icon">🗣️</div>
+                <div>
+                    <strong>발음 연습</strong>
+                    <br>
+                    'th' 발음과 'r/l' 구분에 어려움이 있습니다. 발음 전용 레슨을 받아보세요.
+                </div>
+            </div>
+            
+            <div class="recommendation-item">
+                <div class="recommendation-icon">💼</div>
+                <div>
+                    <strong>비즈니스 영어 도전</strong>
+                    <br>
+                    일상 대화 실력이 우수합니다! 이제 비즈니스 영어에 도전해보세요.
+                </div>
+            </div>
+            
+            <div class="recommendation-item">
+                <div class="recommendation-icon">⏰</div>
+                <div>
+                    <strong>학습 시간 늘리기</strong>
+                    <br>
+                    하루 평균 12분 학습하고 있습니다. 20분으로 늘리면 더 빠른 향상이 가능합니다.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 페이지 로드시 멤버십 확인 및 데이터 로드
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                // 멤버십 상태 확인
+                const response = await fetch('/api/v1/users/7/membership_status');
+                const data = await response.json();
+                
+                if (!data.has_membership) {
+                    alert('활성화된 멤버십이 필요합니다. 홈 화면에서 멤버십을 구매해주세요.');
+                    window.location.href = 'index.html';
+                    return;
+                }
+                
+                const features = data.membership.features;
+                if (!features.includes('analysis')) {
+                    alert('분석 기능을 사용할 수 없는 멤버십입니다. 프리미엄 멤버십으로 업그레이드해주세요.');
+                    window.location.href = 'index.html';
+                    return;
+                }
+                
+                console.log('분석 기능 사용 가능:', data.membership.name);
+                
+                // Mock 데이터 로드 시뮬레이션
+                loadAnalysisData();
+                
+            } catch (error) {
+                console.error('멤버십 확인 실패:', error);
+            }
+        });
+
+        function loadAnalysisData() {
+            // Mock 데이터 로딩 시뮬레이션
+            console.log('분석 데이터 로드 중...');
+            
+            setTimeout(() => {
+                console.log('✅ 분석 완료!');
+                console.log('📊 학습 통계:');
+                console.log('- 총 대화 횟수: 47회');
+                console.log('- 평균 점수: 85점');
+                console.log('- 연속 학습일: 12일');
+                console.log('- 향상도: +15%');
+                
+                // 실제 구현에서는 여기서 차트 라이브러리로 시각화
+                // Chart.js, D3.js 등을 사용하여 동적 차트 생성
+            }, 1000);
+        }
+    </script>
+</body>
+</html>

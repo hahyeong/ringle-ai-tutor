@@ -19,6 +19,20 @@ class Api::V1::ConversationsController < ApplicationController
       return
     end
 
+    # 🆕 횟수제 멤버십 쿠폰 차감
+    membership = user.active_membership
+    if membership&.usage_based?
+      if membership.usage_exhausted?
+        render json: {
+          error: "사용 횟수를 모두 소진했습니다. 멤버십을 업그레이드해주세요."
+        }, status: :forbidden
+        return
+      end
+
+      # 사용 횟수 차감
+      membership.consume_usage!
+    end
+
     if user_message.blank?
       render json: { error: "메시지를 입력해주세요." }, status: :bad_request
       return
@@ -31,7 +45,9 @@ class Api::V1::ConversationsController < ApplicationController
       render json: {
         user_message: user_message,
         ai_response: ai_response,
-        timestamp: Time.current
+        timestamp: Time.current,
+        # 🆕 남은 사용 횟수 정보 추가
+        usage_remaining: membership&.usage_remaining
       }
     rescue => error
       Rails.logger.error "OpenAI API 오류: #{error.message}"
@@ -43,7 +59,8 @@ class Api::V1::ConversationsController < ApplicationController
         user_message: user_message,
         ai_response: fallback_response,
         timestamp: Time.current,
-        note: "AI 서비스 일시 불가로 기본 응답을 제공했습니다."
+        note: "AI 서비스 일시 불가로 기본 응답을 제공했습니다.",
+        usage_remaining: membership&.usage_remaining
       }
     end
   end

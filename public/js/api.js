@@ -25,7 +25,7 @@ async function apiCall(endpoint, options = {}) {
 }
 
 // 멤버십 상태 조회
-async function getMembershipStatus(userId = 1) {
+async function getMembershipStatus(userId = 6) {  // 1 → 6으로 변경
     return await apiCall(`/users/${userId}/membership_status`);
 }
 

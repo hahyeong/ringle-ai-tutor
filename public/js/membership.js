@@ -1,7 +1,7 @@
 // public/js/membership.js
 
 // 현재 사용자 ID (실제로는 로그인 시스템에서 가져와야 함)
-const CURRENT_USER_ID = 1;
+const CURRENT_USER_ID = 7;  // 1 → 6으로 변경
 
 // 멤버십 상태 확인
 async function checkMembershipStatus() {
@@ -79,6 +79,7 @@ function enableFeatures(features) {
     Object.values(buttons).forEach(btn => {
         btn.disabled = true;
         btn.classList.remove('enabled');
+        btn.onclick = null;
     });
     
     // 허용된 기능만 활성화
@@ -89,10 +90,24 @@ function enableFeatures(features) {
         }
     });
     
+    // 학습 버튼 클릭 이벤트
+    if (features.includes('learning')) {
+        buttons.learning.onclick = () => {
+            window.location.href = 'learning.html';
+        };
+    }
+    
     // 대화 버튼 클릭 이벤트
     if (features.includes('conversation')) {
         buttons.conversation.onclick = () => {
             window.location.href = 'conversation.html';
+        };
+    }
+    
+    // 분석 버튼 클릭 이벤트
+    if (features.includes('analysis')) {
+        buttons.analysis.onclick = () => {
+            window.location.href = 'analysis.html';
         };
     }
 }
