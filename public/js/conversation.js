@@ -19,8 +19,10 @@ function initConversation() {
         console.warn('음성 인식이 지원되지 않습니다.');
         // 음성 버튼 비활성화
         const voiceButton = document.getElementById('voiceButton');
-        voiceButton.disabled = true;
-        voiceButton.title = '음성 인식을 지원하지 않는 브라우저입니다';
+        if (voiceButton) {
+            voiceButton.disabled = true;
+            voiceButton.title = '음성 인식을 지원하지 않는 브라우저입니다';
+        }
     }
     
     // 이벤트 리스너 등록
@@ -51,7 +53,7 @@ function displayCurrentUserInHeader() {
         
         userInfoDiv.innerHTML = `
             <div>${userInfo.name}</div>
-            <div style="opacity: 0.8;">${userInfo.membership}</div>
+            <div style="opacity: 0.8;">${userInfo.membership || '멤버십'}</div>
         `;
         
         header.appendChild(userInfoDiv);
@@ -64,32 +66,38 @@ function setupEventListeners() {
     const textInput = document.getElementById('textInput');
     const sendButton = document.getElementById('sendButton');
     
-    // 음성 버튼 클릭
-    voiceButton.addEventListener('click', function() {
-        if (isRecording) {
-            stopSpeechRecognition();
-        } else {
-            startSpeechRecognition();
-        }
-    });
+    if (voiceButton) {
+        // 음성 버튼 클릭
+        voiceButton.addEventListener('click', function() {
+            if (typeof isRecording !== 'undefined' && isRecording) {
+                stopSpeechRecognition();
+            } else {
+                startSpeechRecognition();
+            }
+        });
+    }
     
-    // 텍스트 입력 Enter 키
-    textInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
+    if (textInput) {
+        // 텍스트 입력 Enter 키
+        textInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const message = textInput.value.trim();
+                if (message) {
+                    sendMessage(message);
+                }
+            }
+        });
+    }
+    
+    if (sendButton) {
+        // 전송 버튼 클릭
+        sendButton.addEventListener('click', function() {
             const message = textInput.value.trim();
             if (message) {
                 sendMessage(message);
             }
-        }
-    });
-    
-    // 전송 버튼 클릭
-    sendButton.addEventListener('click', function() {
-        const message = textInput.value.trim();
-        if (message) {
-            sendMessage(message);
-        }
-    });
+        });
+    }
 }
 
 // 대화 권한 확인
@@ -152,12 +160,14 @@ async function sendMessage(message) {
             // AI 응답 표시
             addMessageToChat('ai', response.ai_response);
             
-            // 사용 횟수 정보 표시 (횟수제 멤버십인 경우)
-            if (response.usage_remaining !== undefined) {
+            // 🔧 수정: usage_remaining이 실제 숫자일 때만 경고 표시
+            if (typeof response.usage_remaining === 'number') {
                 console.log(`남은 사용 횟수: ${response.usage_remaining}회`);
                 if (response.usage_remaining <= 3) {
                     showUsageWarning(response.usage_remaining);
                 }
+            } else {
+                console.log('무제한 멤버십 - 횟수 제한 없음');
             }
             
             // TTS로 AI 응답 재생
@@ -170,36 +180,28 @@ async function sendMessage(message) {
         
     } catch (error) {
         console.error('AI 응답 생성 실패:', error);
-
-        let errorMessage = '죄송합니다. ';
-        if (error.message.includes('401')) {
-            errorMessage += 'API 인증에 문제가 있습니다.';
-        } else if (error.message.includes('429')) {
-            errorMessage += 'API 요청 한도를 초과했습니다. 잠시 후 다시 시도해주세요.';
-        } else if (error.message.includes('500')) {
-            errorMessage += '서버에 문제가 발생했습니다.';
-        } else {
-            errorMessage += '응답을 생성하는 중 오류가 발생했습니다. 다시 시도해주세요.';
-        }
-
         addMessageToChat('ai', '죄송합니다. 응답을 생성하는 중 오류가 발생했습니다. 다시 시도해주세요.');
     } finally {
         showLoadingIndicator(false);
     }
 }
 
-// 사용 횟수 경고 표시
+// 🔧 수정: 사용 횟수 경고 표시 함수도 수정
 function showUsageWarning(remaining) {
-    const warningMessage = remaining > 0 
-        ? `⚠️ 남은 대화 횟수: ${remaining}회`
-        : '❌ 대화 횟수가 모두 소진되었습니다.';
-        
-    addMessageToChat('ai', warningMessage);
+    if (typeof remaining === 'number') {
+        const warningMessage = remaining > 0 
+            ? `⚠️ 남은 대화 횟수: ${remaining}회`
+            : '❌ 대화 횟수가 모두 소진되었습니다.';
+            
+        addMessageToChat('ai', warningMessage);
+    }
 }
 
 // 채팅에 메시지 추가
 function addMessageToChat(sender, message) {
     const chatArea = document.getElementById('chatArea');
+    if (!chatArea) return;
+    
     const messageDiv = document.createElement('div');
     messageDiv.className = `message ${sender}`;
     
@@ -226,14 +228,16 @@ function addMessageToChat(sender, message) {
 // 로딩 인디케이터 표시/숨김
 function showLoadingIndicator(show) {
     const indicator = document.getElementById('loadingIndicator');
-    indicator.style.display = show ? 'block' : 'none';
+    if (indicator) {
+        indicator.style.display = show ? 'block' : 'none';
+    }
     
     // 버튼 비활성화/활성화
     const sendButton = document.getElementById('sendButton');
     const voiceButton = document.getElementById('voiceButton');
     
-    sendButton.disabled = show;
-    voiceButton.disabled = show;
+    if (sendButton) sendButton.disabled = show;
+    if (voiceButton) voiceButton.disabled = show;
 }
 
 // 에러 메시지 표시
@@ -247,18 +251,20 @@ function disableConversation() {
     const sendButton = document.getElementById('sendButton');
     const voiceButton = document.getElementById('voiceButton');
     
-    textInput.disabled = true;
-    textInput.placeholder = '대화 기능을 사용할 수 없습니다.';
-    sendButton.disabled = true;
-    voiceButton.disabled = true;
+    if (textInput) {
+        textInput.disabled = true;
+        textInput.placeholder = '대화 기능을 사용할 수 없습니다.';
+    }
+    if (sendButton) sendButton.disabled = true;
+    if (voiceButton) voiceButton.disabled = true;
 }
 
 // 페이지 언로드시 음성 정리
 window.addEventListener('beforeunload', function() {
-    if (recognition && isRecording) {
+    if (typeof recognition !== 'undefined' && recognition && typeof isRecording !== 'undefined' && isRecording) {
         recognition.stop();
     }
-    if (speechSynthesis) {
-        speechSynthesis.cancel();
+    if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
     }
 });

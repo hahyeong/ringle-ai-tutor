@@ -128,6 +128,22 @@
         .demo-note strong {
             color: #533101;
         }
+
+        .refresh-btn {
+            background: #17a2b8;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .refresh-btn:hover {
+            background: #138496;
+        }
     </style>
 </head>
 <body>
@@ -136,30 +152,10 @@
         <h1 class="login-title">Ringle AI 튜터</h1>
         <p class="login-subtitle">테스트할 사용자를 선택해주세요</p>
         
+        <button class="refresh-btn" onclick="loadUsers()">사용자 목록 새로고침</button>
+        
         <div class="user-selection" id="userSelection">
-            <div class="user-option" data-user-id="17">
-                <div class="user-name">테스트 사용자</div>
-                <div class="user-email">test@ringle.co.kr</div>
-                <div class="user-membership">✅ 베이직 멤버십 (학습 기능)</div>
-            </div>
-            
-            <div class="user-option" data-user-id="18">
-                <div class="user-name">프리미엄 사용자</div>
-                <div class="user-email">premium@ringle.co.kr</div>
-                <div class="user-membership">⭐ 프리미엄 멤버십 (모든 기능)</div>
-            </div>
-            
-            <div class="user-option" data-user-id="19">
-                <div class="user-name">횟수제 사용자</div>
-                <div class="user-email">usage@ringle.co.kr</div>
-                <div class="user-membership">🎯 횟수제 멤버십 (대화 10회)</div>
-            </div>
-            
-            <div class="user-option" data-user-id="20">
-                <div class="user-name">멤버십 없음</div>
-                <div class="user-email">guest@example.com</div>
-                <div class="user-membership">❌ 활성 멤버십 없음</div>
-            </div>
+            <div style="padding: 20px; color: #666;">사용자 목록을 불러오는 중...</div>
         </div>
         
         <button class="login-btn" id="loginBtn" disabled>로그인</button>
@@ -176,24 +172,140 @@
 
     <script>
         let selectedUserId = null;
+        let users = [];
         
-        // 사용자 선택 이벤트 처리
-        document.getElementById('userSelection').addEventListener('click', function(e) {
-            const userOption = e.target.closest('.user-option');
-            if (!userOption) return;
-            
-            // 기존 선택 해제
-            document.querySelectorAll('.user-option').forEach(option => {
-                option.classList.remove('selected');
-            });
-            
-            // 새로운 선택
-            userOption.classList.add('selected');
-            selectedUserId = userOption.getAttribute('data-user-id');
-            
-            // 로그인 버튼 활성화
-            document.getElementById('loginBtn').disabled = false;
+        // 페이지 로드 시 사용자 목록 가져오기
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUsers();
         });
+        
+        // 사용자 목록 API에서 가져오기
+        async function loadUsers() {
+            try {
+                const response = await fetch('/api/v1/users');
+                if (response.ok) {
+                    users = await response.json();
+                    displayUsers(users);
+                } else {
+                    // API가 없는 경우 fallback으로 직접 조회
+                    await loadUsersDirectly();
+                }
+            } catch (error) {
+                console.error('사용자 목록 로드 실패:', error);
+                await loadUsersDirectly();
+            }
+        }
+        
+        // 직접 사용자 정보 조회 (fallback)
+        async function loadUsersDirectly() {
+            const userSelection = document.getElementById('userSelection');
+            userSelection.innerHTML = '<div style="padding: 20px; color: #666;">사용자 ID를 확인 중...</div>';
+            
+            // 각 사용자의 멤버십 상태를 개별 조회
+            const testUsers = [];
+            
+            for (let id = 21; id <= 30; id++) {
+                try {
+                    const response = await fetch(`/api/v1/users/${id}/membership_status`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        let membershipInfo = '❌ 활성 멤버십 없음';
+                        let membershipType = '없음';
+                        
+                        if (data.has_membership) {
+                            const membership = data.membership;
+                            membershipType = membership.name;
+                            
+                            if (membership.name.includes('베이직')) {
+                                membershipInfo = '✅ 베이직 멤버십 (학습 기능)';
+                            } else if (membership.name.includes('프리미엄')) {
+                                membershipInfo = '⭐ 프리미엄 멤버십 (모든 기능)';
+                            } else if (membership.name.includes('횟수제')) {
+                                membershipInfo = '🎯 횟수제 멤버십 (대화 제한)';
+                            }
+                        }
+                        
+                        // 임시 사용자 정보 생성 (이메일은 추정)
+                        const emailMap = {
+                            '베이직': 'test@ringle.co.kr',
+                            '프리미엄': 'premium@ringle.co.kr', 
+                            '횟수제': 'usage@ringle.co.kr',
+                            '없음': 'guest@example.com'
+                        };
+                        
+                        const nameMap = {
+                            '베이직': '테스트 사용자',
+                            '프리미엄': '프리미엄 사용자',
+                            '횟수제': '횟수제 사용자',
+                            '없음': '멤버십 없음'
+                        };
+                        
+                        testUsers.push({
+                            id: id,
+                            name: nameMap[membershipType] || `사용자 ${id}`,
+                            email: emailMap[membershipType] || `user${id}@example.com`,
+                            membership: membershipInfo
+                        });
+                    }
+                } catch (error) {
+                    // 사용자가 없으면 건너뛰기
+                    continue;
+                }
+            }
+            
+            if (testUsers.length > 0) {
+                displayUsers(testUsers);
+            } else {
+                userSelection.innerHTML = `
+                    <div style="padding: 20px; color: #e74c3c;">
+                        <strong>⚠️ 사용자를 찾을 수 없습니다!</strong><br>
+                        다음 명령어를 실행해주세요:<br>
+                        <code style="background: #f8f9fa; padding: 5px; border-radius: 3px;">rails db:seed</code>
+                    </div>
+                `;
+            }
+        }
+        
+        // 사용자 목록 표시
+        function displayUsers(userList) {
+            const userSelection = document.getElementById('userSelection');
+            
+            if (userList.length === 0) {
+                userSelection.innerHTML = '<div style="padding: 20px; color: #e74c3c;">사용자가 없습니다. rails db:seed를 실행해주세요.</div>';
+                return;
+            }
+            
+            userSelection.innerHTML = userList.map(user => `
+                <div class="user-option" data-user-id="${user.id}">
+                    <div class="user-name">${user.name}</div>
+                    <div class="user-email">${user.email}</div>
+                    <div class="user-membership">${user.membership}</div>
+                </div>
+            `).join('');
+            
+            // 클릭 이벤트 재등록
+            setupUserSelection();
+        }
+        
+        // 사용자 선택 이벤트 설정
+        function setupUserSelection() {
+            document.getElementById('userSelection').addEventListener('click', function(e) {
+                const userOption = e.target.closest('.user-option');
+                if (!userOption) return;
+                
+                // 기존 선택 해제
+                document.querySelectorAll('.user-option').forEach(option => {
+                    option.classList.remove('selected');
+                });
+                
+                // 새로운 선택
+                userOption.classList.add('selected');
+                selectedUserId = userOption.getAttribute('data-user-id');
+                
+                // 로그인 버튼 활성화
+                document.getElementById('loginBtn').disabled = false;
+            });
+        }
         
         // 로그인 버튼 클릭 처리
         document.getElementById('loginBtn').addEventListener('click', function() {
@@ -202,33 +314,13 @@
             // localStorage에 선택된 사용자 ID 저장
             localStorage.setItem('currentUserId', selectedUserId);
             
-            // 사용자 정보도 저장 (옵션)
-            const userInfo = getUserInfo(selectedUserId);
-            localStorage.setItem('currentUserInfo', JSON.stringify(userInfo));
+            // 사용자 정보도 저장
+            const selectedUser = users.find(u => u.id == selectedUserId) || 
+                                 { name: `사용자 ${selectedUserId}`, email: `user${selectedUserId}@example.com` };
+            localStorage.setItem('currentUserInfo', JSON.stringify(selectedUser));
             
             // 메인 페이지로 이동
             window.location.href = 'index.html';
-        });
-        
-        // 사용자 정보 반환 함수
-        function getUserInfo(userId) {
-            const users = {
-                '17': { name: '테스트 사용자', email: 'test@ringle.co.kr', membership: '베이직' },
-                '18': { name: '프리미엄 사용자', email: 'premium@ringle.co.kr', membership: '프리미엄' },
-                '19': { name: '횟수제 사용자', email: 'usage@ringle.co.kr', membership: '횟수제' },
-                '20': { name: '멤버십 없음', email: 'guest@example.com', membership: '없음' }
-            };
-            return users[userId] || users['0'];
-        }
-        
-        // 페이지 로드시 기존 로그인 상태 확인
-        document.addEventListener('DOMContentLoaded', function() {
-            const currentUserId = localStorage.getItem('currentUserId');
-            if (currentUserId) {
-                console.log('기존 로그인 상태:', currentUserId);
-                // 필요시 자동으로 메인 페이지로 이동
-                // window.location.href = 'index.html';
-            }
         });
     </script>
 </body>

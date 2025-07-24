@@ -10,19 +10,42 @@ class Api::V1::ConversationsController < ApplicationController
     user_message = params[:message]
     user_id = params[:user_id] || 1
 
+    # 🔧 디버깅을 위한 로깅 추가
+    Rails.logger.info "=== 대화 요청 디버깅 시작 ==="
+    Rails.logger.info "User ID: #{user_id}"
+    Rails.logger.info "Message: #{user_message}"
+
     # 멤버십 확인
     user = User.find(user_id)
+    membership = user.active_membership
+
+    Rails.logger.info "User: #{user.name} (#{user.email})"
+    if membership
+      Rails.logger.info "Membership: #{membership.membership_type.name}"
+      Rails.logger.info "Usage Count: #{membership.usage_count}"
+      Rails.logger.info "Usage Limit: #{membership.usage_limit}"
+      Rails.logger.info "Usage Based?: #{membership.usage_based?}"
+      Rails.logger.info "Usage Exhausted?: #{membership.usage_exhausted?}"
+      Rails.logger.info "Active?: #{membership.active?}"
+    else
+      Rails.logger.info "No active membership"
+    end
+
+    Rails.logger.info "Has conversation feature?: #{user.has_feature?('conversation')}"
+
     unless user.has_feature?("conversation")
+      Rails.logger.info "Access denied: No conversation feature"
       render json: {
         error: "대화 기능을 사용할 수 없습니다. 프리미엄 멤버십을 구매해주세요."
       }, status: :forbidden
       return
     end
 
-    # 🆕 횟수제 멤버십 쿠폰 차감
-    membership = user.active_membership
+    # 🔧 수정: 횟수제 멤버십만 횟수 체크
     if membership&.usage_based?
+      Rails.logger.info "Checking usage limits for usage-based membership"
       if membership.usage_exhausted?
+        Rails.logger.info "Usage exhausted - denying access"
         render json: {
           error: "사용 횟수를 모두 소진했습니다. 멤버십을 업그레이드해주세요."
         }, status: :forbidden
@@ -30,7 +53,10 @@ class Api::V1::ConversationsController < ApplicationController
       end
 
       # 사용 횟수 차감
+      Rails.logger.info "Consuming usage count"
       membership.consume_usage!
+    else
+      Rails.logger.info "Unlimited membership - proceeding without usage check"
     end
 
     if user_message.blank?
@@ -39,98 +65,57 @@ class Api::V1::ConversationsController < ApplicationController
     end
 
     begin
-      Rails.logger.debug "[ConversationsController] 사용자 메시지: #{user_message} (user_id: #{user_id})"
-      # OpenAI API 호출
-      ai_response = call_openai_api(user_message)
-      Rails.logger.debug "[ConversationsController] OpenAI 응답: #{ai_response.inspect}"
+      # OpenAI API 호출 대신 fallback 응답 사용 (테스트용)
+      ai_response = generate_fallback_response(user_message)
 
       render json: {
         user_message: user_message,
         ai_response: ai_response,
         timestamp: Time.current,
-        # 🆕 남은 사용 횟수 정보 추가
-        usage_remaining: membership&.usage_remaining
+        note: "데모 모드: fallback 응답을 제공했습니다.",
+        # 🔧 수정: 횟수제인 경우에만 사용 횟수 정보 제공
+        usage_remaining: membership&.usage_based? ? membership.usage_remaining : nil
       }
     rescue => error
-      Rails.logger.error "[ConversationsController] OpenAI API 오류: #{error.class} - #{error.message}"
-      Rails.logger.error "[ConversationsController] 백트레이스: #{error.backtrace&.first(10)&.join("\n")}" if error.backtrace
+      Rails.logger.error "AI 응답 생성 오류: #{error.message}"
 
       # 에러 시 fallback 응답
       fallback_response = generate_fallback_response(user_message)
-      Rails.logger.debug "[ConversationsController] Fallback 응답: #{fallback_response.inspect}"
 
       render json: {
         user_message: user_message,
         ai_response: fallback_response,
         timestamp: Time.current,
-        note: "AI 서비스 일시 불가로 기본 응답을 제공했습니다.",
-        usage_remaining: membership&.usage_remaining
+        note: "에러 발생으로 기본 응답을 제공했습니다.",
+        usage_remaining: membership&.usage_based? ? membership.usage_remaining : nil
       }
     end
   end
 
   private
 
-  def call_openai_api(user_message)
-    # API 키 가져오기
-    api_key = Rails.application.credentials.openai[:api_key]
-    Rails.logger.debug "[call_openai_api] OpenAI API 키 존재 여부: #{api_key.present?}"
-
-    if api_key.blank?
-      Rails.logger.error "[call_openai_api] OpenAI API 키가 설정되지 않았습니다."
-      raise "OpenAI API 키가 설정되지 않았습니다."
-    end
-
-    # OpenAI API 요청
-    Rails.logger.debug "[call_openai_api] OpenAI API 요청 시작"
-    response = self.class.post("/chat/completions",
-      headers: {
-        "Authorization" => "Bearer #{api_key}",
-        "Content-Type" => "application/json"
-      },
-      body: {
-        model: "gpt-3.5-turbo",
-        messages: [
-          {
-            role: "system",
-            content: "You are an English tutor AI assistant for Ringle. Help users practice English conversation. Be encouraging, correct mistakes gently, and ask follow-up questions to keep the conversation going. Keep responses conversational and not too long."
-          },
-          {
-            role: "user",
-            content: user_message
-          }
-        ],
-        max_tokens: 150,
-        temperature: 0.7
-      }.to_json,
-      timeout: 15
-    )
-    Rails.logger.debug "[call_openai_api] OpenAI API 응답 코드: #{response.code}"
-    Rails.logger.debug "[call_openai_api] OpenAI API 응답 바디: #{response.body}"
-
-    if response.success?
-      ai_message = response.parsed_response.dig("choices", 0, "message", "content")
-      Rails.logger.debug "[call_openai_api] 파싱된 AI 메시지: #{ai_message.inspect}"
-      ai_message&.strip || "I'm sorry, I couldn't process your message. Could you try again?"
-    else
-      Rails.logger.error "[call_openai_api] OpenAI API 응답 오류: #{response.code} - #{response.body}"
-      raise "OpenAI API 호출 실패: #{response.code}"
-    end
-  end
-
   def generate_fallback_response(user_message)
-    # OpenAI API 실패 시 사용할 기본 응답들
-    fallback_responses = [
-      "That's interesting! Could you tell me more about that?",
-      "Great! How do you feel about this topic?",
-      "I understand. What would you like to practice next?",
-      "Excellent! Your English is improving. Let's continue our conversation.",
-      "That's a good point. What's your opinion on this matter?",
-      "Nice! Can you explain that in different words?",
-      "Perfect! Let's practice some more vocabulary related to this topic.",
-      "Wonderful! How would you use this in a real conversation?"
-    ]
-
-    fallback_responses.sample
+    # 사용자 메시지 패턴에 따른 적절한 응답
+    case user_message.downcase
+    when /hello|hi|hey/
+      "Hello! How are you doing today? Let's practice some English together!"
+    when /how are you/
+      "I'm doing great, thank you for asking! How about you? Tell me about your day."
+    when /bye|goodbye/
+      "Goodbye! It was nice talking with you. Keep practicing your English!"
+    when /thank/
+      "You're welcome! I'm here to help you practice English anytime."
+    else
+      fallback_responses = [
+        "That's interesting! Could you tell me more about that?",
+        "Great! How do you feel about this topic?",
+        "I understand. What would you like to practice next?",
+        "Excellent! Your English is improving. Let's continue our conversation.",
+        "That's a good point. What's your opinion on this matter?",
+        "Nice! Can you explain that in different words?",
+        "Perfect! Let's practice some more vocabulary related to this topic."
+      ]
+      fallback_responses.sample
+    end
   end
 end
