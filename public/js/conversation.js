@@ -139,8 +139,14 @@ async function sendMessage(message) {
     showLoadingIndicator(true);
     
     try {
-        // AI 응답 생성 (업데이트된 API 사용)
-        const response = await sendMessage(message);
+        // API 함수 직접 호출 (api.js에서 가져온 함수)
+        const response = await apiCall('/conversations/chat', {
+            method: 'POST',
+            body: JSON.stringify({
+                message: message,
+                user_id: getCurrentUserId()
+            })
+        });
         
         if (response && response.ai_response) {
             // AI 응답 표시
@@ -164,6 +170,18 @@ async function sendMessage(message) {
         
     } catch (error) {
         console.error('AI 응답 생성 실패:', error);
+
+        let errorMessage = '죄송합니다. ';
+        if (error.message.includes('401')) {
+            errorMessage += 'API 인증에 문제가 있습니다.';
+        } else if (error.message.includes('429')) {
+            errorMessage += 'API 요청 한도를 초과했습니다. 잠시 후 다시 시도해주세요.';
+        } else if (error.message.includes('500')) {
+            errorMessage += '서버에 문제가 발생했습니다.';
+        } else {
+            errorMessage += '응답을 생성하는 중 오류가 발생했습니다. 다시 시도해주세요.';
+        }
+
         addMessageToChat('ai', '죄송합니다. 응답을 생성하는 중 오류가 발생했습니다. 다시 시도해주세요.');
     } finally {
         showLoadingIndicator(false);

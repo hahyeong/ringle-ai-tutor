@@ -39,8 +39,10 @@ class Api::V1::ConversationsController < ApplicationController
     end
 
     begin
+      Rails.logger.debug "[ConversationsController] 사용자 메시지: #{user_message} (user_id: #{user_id})"
       # OpenAI API 호출
       ai_response = call_openai_api(user_message)
+      Rails.logger.debug "[ConversationsController] OpenAI 응답: #{ai_response.inspect}"
 
       render json: {
         user_message: user_message,
@@ -50,10 +52,12 @@ class Api::V1::ConversationsController < ApplicationController
         usage_remaining: membership&.usage_remaining
       }
     rescue => error
-      Rails.logger.error "OpenAI API 오류: #{error.message}"
+      Rails.logger.error "[ConversationsController] OpenAI API 오류: #{error.class} - #{error.message}"
+      Rails.logger.error "[ConversationsController] 백트레이스: #{error.backtrace&.first(10)&.join("\n")}" if error.backtrace
 
       # 에러 시 fallback 응답
       fallback_response = generate_fallback_response(user_message)
+      Rails.logger.debug "[ConversationsController] Fallback 응답: #{fallback_response.inspect}"
 
       render json: {
         user_message: user_message,
@@ -70,12 +74,15 @@ class Api::V1::ConversationsController < ApplicationController
   def call_openai_api(user_message)
     # API 키 가져오기
     api_key = Rails.application.credentials.openai[:api_key]
+    Rails.logger.debug "[call_openai_api] OpenAI API 키 존재 여부: #{api_key.present?}"
 
     if api_key.blank?
+      Rails.logger.error "[call_openai_api] OpenAI API 키가 설정되지 않았습니다."
       raise "OpenAI API 키가 설정되지 않았습니다."
     end
 
     # OpenAI API 요청
+    Rails.logger.debug "[call_openai_api] OpenAI API 요청 시작"
     response = self.class.post("/chat/completions",
       headers: {
         "Authorization" => "Bearer #{api_key}",
@@ -95,14 +102,18 @@ class Api::V1::ConversationsController < ApplicationController
         ],
         max_tokens: 150,
         temperature: 0.7
-      }.to_json
+      }.to_json,
+      timeout: 15
     )
+    Rails.logger.debug "[call_openai_api] OpenAI API 응답 코드: #{response.code}"
+    Rails.logger.debug "[call_openai_api] OpenAI API 응답 바디: #{response.body}"
 
     if response.success?
       ai_message = response.parsed_response.dig("choices", 0, "message", "content")
+      Rails.logger.debug "[call_openai_api] 파싱된 AI 메시지: #{ai_message.inspect}"
       ai_message&.strip || "I'm sorry, I couldn't process your message. Could you try again?"
     else
-      Rails.logger.error "OpenAI API 응답 오류: #{response.code} - #{response.body}"
+      Rails.logger.error "[call_openai_api] OpenAI API 응답 오류: #{response.code} - #{response.body}"
       raise "OpenAI API 호출 실패: #{response.code}"
     end
   end
