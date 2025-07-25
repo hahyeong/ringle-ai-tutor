@@ -4,71 +4,662 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ringle AI 튜터</title>
-    <link href="css/styles.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8f9fa;
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* 헤더 스타일링 */
+        header {
+            text-align: center;
+            color: #1f2937;
+            margin-bottom: 40px;
+            padding: 40px 0;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        header p {
+            font-size: 1.2rem;
+            color: #6b7280;
+        }
+
+        /* 사용자 정보 (헤더 우상단) */
+        .user-info {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 12px 20px;
+            border-radius: 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border: 1px solid #e5e7eb;
+            color: #1f2937;
+        }
+
+        .user-info button {
+            background: #afafaf;
+            border: none;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .user-info button:hover {
+            background: #4b5563;
+        }
+
+        /* 멤버십 상태 섹션 */
+        .membership-status {
+            margin-bottom: 40px;
+        }
+
+        .membership-status h2 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: #1f2937;
+            font-weight: 600;
+        }
+
+        .membership-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 4px 25px rgba(0,0,0,0.08);
+            border: 2px solid #e5e7eb;
+            transition: all 0.3s ease;
+        }
+
+        .membership-card.active {
+            border-color: #10b981;
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+        }
+
+        .membership-card.expired {
+            border-color: #ef4444;
+            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+        }
+
+        .membership-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .membership-name {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #1f2937;
+        }
+
+        .membership-status-badge {
+            font-size: 0.9rem;
+            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: 20px;
+            background: #10b981;
+            color: white;
+        }
+
+        .membership-features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 20px 0;
+        }
+
+        .feature-badge {
+            background: #6366f1;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .membership-details {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .membership-expire {
+            color: #6b7280;
+            margin-bottom: 15px;
+        }
+
+        .days-remaining {
+            font-weight: 600;
+            color: #10b981;
+        }
+
+        /* 사용량 정보 스타일 */
+        .usage-info {
+            background: rgba(99, 102, 241, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 15px;
+        }
+
+        .usage-counter {
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #1f2937;
+        }
+
+        .usage-count {
+            font-size: 1.3rem;
+            padding: 4px 12px;
+            border-radius: 8px;
+            background: white;
+            color: #6366f1;
+            font-weight: 700;
+        }
+
+        .usage-count.low {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+
+        .unlimited-info {
+            background: rgba(16, 185, 129, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            font-weight: 600;
+            color: #065f46;
+            margin-top: 15px;
+        }
+
+        /* 기능 버튼 그리드 */
+        .features {
+            margin-bottom: 40px;
+        }
+
+        .features h2 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: #1f2937;
+            font-weight: 600;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .feature-btn {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .feature-btn:hover::before {
+            left: 100%;
+        }
+
+        .feature-btn:hover:not(:disabled) {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.2);
+            border-color: #6366f1;
+        }
+
+        .feature-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .feature-btn.enabled {
+            border-color: #6366f1;
+            background: linear-gradient(135deg, #fafaff 0%, #f1f5f9 100%);
+        }
+
+        .feature-btn.usage-exhausted {
+            border-color: #ef4444;
+            background: #fef2f2;
+        }
+
+        .feature-icon {
+            font-size: 3.5rem;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .feature-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #1f2937;
+        }
+
+        .feature-desc {
+            color: #6b7280;
+            line-height: 1.5;
+        }
+
+        /* 멤버십 구매 섹션 - 과제 스타일 */
+        .membership-purchase {
+            margin-top: 40px;
+        }
+
+        .membership-purchase h2 {
+            font-size: 1.8rem;
+            margin-bottom: 30px;
+            color: #1f2937;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .membership-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .membership-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            border: 2px solid #e5e7eb;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .membership-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+
+        .membership-card.premium-plus {
+            border-color: #6366f1;
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.15);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .plan-label {
+            background: #f3f4f6;
+            color: #6b7280;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .discount-rate {
+            background: #dc2626;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+
+        .discount-text {
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .plan-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 4px;
+        }
+
+        .plan-duration {
+            color: #6b7280;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+        }
+
+        .price-section {
+            margin-bottom: 24px;
+        }
+
+        .original-price {
+            font-size: 0.9rem;
+            color: #9ca3af;
+            text-decoration: line-through;
+            margin-bottom: 8px;
+        }
+
+        .discounted-price {
+            display: flex;
+            align-items: baseline;
+            gap: 4px;
+        }
+
+        .discounted-price .amount {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #1f2937;
+        }
+
+        .discounted-price .currency {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #6b7280;
+        }
+
+        .features-list {
+            margin-bottom: 24px;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .feature-item:last-child {
+            border-bottom: none;
+        }
+
+        .feature-icon {
+            font-size: 1.1rem;
+        }
+
+        .feature-text {
+            font-size: 0.95rem;
+            color: #374151;
+            font-weight: 500;
+        }
+
+        .purchase-btn {
+            width: 100%;
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .purchase-btn.primary {
+            background: #6366f1;
+            color: white;
+            border-color: #6366f1;
+        }
+
+        .purchase-btn.primary:hover {
+            background: #5b5bd6;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .purchase-btn.secondary {
+            background: white;
+            color: #6366f1;
+            border-color: #6366f1;
+        }
+
+        .purchase-btn.secondary:hover {
+            background: #f8faff;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.15);
+        }
+
+        /* 반응형 디자인 */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            header {
+                margin: -15px -15px 30px -15px;
+                padding: 30px 15px;
+            }
+            
+            header h1 {
+                font-size: 2rem;
+            }
+            
+            .user-info {
+                position: static;
+                margin: 20px auto 0;
+                justify-content: center;
+                max-width: 300px;
+            }
+            
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .membership-options {
+                grid-template-columns: 1fr;
+                max-width: 400px;
+            }
+            
+            .membership-option.premium {
+                transform: none;
+            }
+        }
+
+        /* 로딩 애니메이션 */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            color: #6b7280;
+            font-style: italic;
+        }
+
+        .loading::after {
+            content: '';
+            margin-left: 10px;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #e5e7eb;
+            border-top: 2px solid #6366f1;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>🤖 Ringle AI 튜터</h1>
-            <p>AI와 함께하는 영어 학습</p>
+            <h1>Ringle AI 튜터</h1>
+            <p>영어 학습의 새로운 경험</p>
         </header>
 
         <main>
             <!-- 멤버십 현황 섹션 -->
             <section class="membership-status">
-                <h2>멤버십 현황</h2>
+                <h2>💎 내 멤버십</h2>
                 <div id="membershipInfo" class="membership-card">
-                    <div class="loading">멤버십 정보를 불러오는 중...</div>
+                    <div class="loading">멤버십 정보를 불러오는 중</div>
                 </div>
             </section>
 
             <!-- 기능 버튼들 -->
             <section class="features">
+                <h2>🚀 AI 튜터 기능</h2>
                 <div class="feature-grid">
                     <button id="conversationBtn" class="feature-btn" disabled>
                         <div class="feature-icon">💬</div>
                         <div class="feature-title">AI 대화</div>
-                        <div class="feature-desc">AI와 실시간 대화하기</div>
+                        <div class="feature-desc">실시간으로 AI 튜터와 영어 대화를 나누며 스피킹 실력을 향상시켜보세요</div>
                     </button>
                     
                     <button id="learningBtn" class="feature-btn" disabled>
                         <div class="feature-icon">📚</div>
-                        <div class="feature-title">학습</div>
-                        <div class="feature-desc">구조화된 영어 학습</div>
+                        <div class="feature-title">체계적 학습</div>
+                        <div class="feature-desc">단계별 커리큘럼으로 문법, 어휘, 표현을 체계적으로 학습하세요</div>
                     </button>
                     
                     <button id="analysisBtn" class="feature-btn" disabled>
                         <div class="feature-icon">📊</div>
-                        <div class="feature-title">분석</div>
-                        <div class="feature-desc">학습 진도 분석</div>
+                        <div class="feature-title">학습 분석</div>
+                        <div class="feature-desc">AI가 분석한 상세한 학습 리포트로 약점을 파악하고 개선하세요</div>
                     </button>
                 </div>
             </section>
 
             <!-- 멤버십 구매 섹션 -->
             <section class="membership-purchase" id="purchaseSection" style="display: none;">
-                <h2>멤버십 구매</h2>
+                <h2>✨ 멤버십 선택</h2>
+                
                 <div class="membership-options">
-                    <div class="membership-option">
-                        <h3>베이직 멤버십</h3>
-                        <div class="price">₩19,000 / 30일</div>
-                        <ul>
-                            <li>✅ 학습 기능</li>
-                            <li>❌ AI 대화</li>
-                            <li>❌ 학습 분석</li>
-                        </ul>
-                        <button class="purchase-btn" data-type="1">구매하기</button>
+                    <!-- 프리미엄 플러스 (과제 이미지 스타일) -->
+                    <div class="membership-card premium-plus">
+                        <div class="card-header">
+                            <span class="plan-label">월간</span>
+                            <span class="discount-rate">73% <span class="discount-text">할인</span></span>
+                        </div>
+                        
+                        <h3 class="plan-name">프리미엄 플러스</h3>
+                        <div class="plan-duration">360일</div>
+                        
+                        <div class="price-section">
+                            <div class="original-price">219,000원</div>
+                            <div class="discounted-price">
+                                <span class="amount">49,000</span>
+                                <span class="currency">원</span>
+                            </div>
+                        </div>
+                        
+                        <div class="features-list">
+                            <div class="feature-item">
+                                <span class="feature-icon">📚</span>
+                                <span class="feature-text">AI 튜터 학습</span>
+                            </div>
+                            <div class="feature-item">
+                                <span class="feature-icon">🗣️</span>
+                                <span class="feature-text">AI 통화연습</span>
+                            </div>
+                            <div class="feature-item">
+                                <span class="feature-icon">📖</span>
+                                <span class="feature-text">최신학습</span>
+                            </div>
+                            <div class="feature-item">
+                                <span class="feature-icon">📊</span>
+                                <span class="feature-text">무제한 AI 분석</span>
+                            </div>
+                        </div>
+                        
+                        <button class="purchase-btn primary" data-type="2">구매</button>
                     </div>
                     
-                    <div class="membership-option premium">
-                        <h3>프리미엄 멤버십</h3>
-                        <div class="price">₩49,000 / 60일</div>
-                        <ul>
-                            <li>✅ 학습 기능</li>
-                            <li>✅ AI 대화</li>
-                            <li>✅ 학습 분석</li>
-                        </ul>
-                        <button class="purchase-btn" data-type="2">구매하기</button>
+                    <!-- 베이직 (과제 이미지 스타일) -->
+                    <div class="membership-card basic">
+                        <div class="card-header">
+                            <span class="plan-label">월간</span>
+                            <span class="discount-rate">62% <span class="discount-text">할인</span></span>
+                        </div>
+                        
+                        <h3 class="plan-name">베이직</h3>
+                        <div class="plan-duration">360일</div>
+                        
+                        <div class="price-section">
+                            <div class="original-price">129,000원</div>
+                            <div class="discounted-price">
+                                <span class="amount">19,000</span>
+                                <span class="currency">원</span>
+                            </div>
+                        </div>
+                        
+                        <div class="features-list">
+                            <div class="feature-item">
+                                <span class="feature-icon">📚</span>
+                                <span class="feature-text">AI 튜터 학습</span>
+                            </div>
+                        </div>
+                        
+                        <button class="purchase-btn secondary" data-type="1">구매</button>
+                    </div>
+
+                    <!-- 횟수제 추가 -->
+                    <div class="membership-card usage-based">
+                        <div class="card-header">
+                            <span class="plan-label">횟수제</span>
+                            <span class="discount-rate">50% <span class="discount-text">할인</span></span>
+                        </div>
+                        
+                        <h3 class="plan-name">대화 전용</h3>
+                        <div class="plan-duration">30일 / 10회</div>
+                        
+                        <div class="price-section">
+                            <div class="original-price">30,000원</div>
+                            <div class="discounted-price">
+                                <span class="amount">15,000</span>
+                                <span class="currency">원</span>
+                            </div>
+                        </div>
+                        
+                        <div class="features-list">
+                            <div class="feature-item">
+                                <span class="feature-icon">🗣️</span>
+                                <span class="feature-text">AI 대화 (10회)</span>
+                            </div>
+                        </div>
+                        
+                        <button class="purchase-btn secondary" data-type="3">구매</button>
                     </div>
                 </div>
             </section>

@@ -57,7 +57,7 @@ function displayCurrentUser() {
                 <div style="font-size: 0.9rem; opacity: 0.9;">${userInfo.email}</div>
             </div>
             <button onclick="logout()" style="
-                background: rgba(255,255,255,0.3);
+                background: #afafaf;
                 border: none;
                 color: white;
                 padding: 8px 15px;

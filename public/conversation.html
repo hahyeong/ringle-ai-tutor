@@ -4,239 +4,560 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI 대화 - Ringle AI 튜터</title>
-    <link href="css/styles.css" rel="stylesheet">
     <style>
-        /* 대화 화면 전용 스타일 */
-        .conversation-container {
-            max-width: 800px;
-            margin: 0 auto;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8fafb;
             height: 100vh;
             display: flex;
             flex-direction: column;
-            background: white;
         }
-        
+
+        /* 헤더 */
         .conversation-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: white;
             padding: 20px;
-            text-align: center;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
-        
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .back-button {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6b7280;
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .back-button:hover {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .conversation-title {
+            text-align: center;
+            flex: 1;
+        }
+
+        .conversation-title h1 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 4px;
+        }
+
+        .conversation-subtitle {
+            font-size: 0.9rem;
+            color: #6b7280;
+        }
+
+        .header-menu {
+            padding: 8px;
+        }
+
+        .menu-button {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6b7280;
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .menu-button:hover {
+            background: #f3f4f6;
+        }
+
+        /* 채팅 영역 */
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
         .chat-area {
             flex: 1;
             padding: 20px;
             overflow-y: auto;
-            background: #f8f9fa;
+            background: #f8fafb;
         }
-        
+
+        /* 메시지 스타일 */
         .message {
-            margin-bottom: 20px;
+            margin-bottom: 24px;
             display: flex;
+            gap: 12px;
             align-items: flex-start;
-            gap: 10px;
         }
-        
+
         .message.user {
             flex-direction: row-reverse;
         }
-        
+
         .message-avatar {
-            width: 40px;
-            height: 40px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .message.ai .message-avatar {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
             color: white;
         }
-        
-        .message.ai .message-avatar {
-            background: #667eea;
-        }
-        
+
         .message.user .message-avatar {
-            background: #4CAF50;
+            background: #e5e7eb;
+            color: #6b7280;
         }
-        
+
         .message-content {
             max-width: 70%;
-            padding: 15px 20px;
-            border-radius: 20px;
             position: relative;
         }
-        
-        .message.ai .message-content {
-            background: white;
-            border: 1px solid #e0e0e0;
+
+        .message-bubble {
+            padding: 12px 16px;
+            border-radius: 18px;
+            position: relative;
+            word-wrap: break-word;
+            line-height: 1.4;
         }
-        
-        .message.user .message-content {
-            background: #4CAF50;
+
+        .message.ai .message-bubble {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 18px 18px 18px 4px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .message.user .message-bubble {
+            background: #6366f1;
             color: white;
+            border-radius: 18px 18px 4px 18px;
         }
-        
+
         .message-time {
-            font-size: 0.8rem;
-            opacity: 0.7;
-            margin-top: 5px;
+            font-size: 0.75rem;
+            color: #9ca3af;
+            margin-top: 4px;
+            text-align: right;
         }
-        
-        .input-area {
-            padding: 20px;
-            background: white;
-            border-top: 1px solid #e0e0e0;
+
+        .message.ai .message-time {
+            text-align: left;
+        }
+
+        .message-actions {
             display: flex;
-            gap: 15px;
-            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
         }
-        
+
+        .message.user .message-actions {
+            justify-content: flex-end;
+        }
+
+        .action-button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            color: #6b7280;
+            transition: all 0.2s ease;
+        }
+
+        .action-button:hover {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .play-button {
+            background: #f3f4f6;
+            border: none;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .play-button:hover {
+            background: #e5e7eb;
+        }
+
+        /* 웨이브폼 애니메이션 */
+        .waveform {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            justify-content: center;
+            height: 40px;
+            margin: 8px 0;
+        }
+
+        .wave-bar {
+            width: 3px;
+            background: #6366f1;
+            border-radius: 2px;
+            animation: wave 1.5s ease-in-out infinite;
+        }
+
+        .wave-bar:nth-child(1) { height: 10px; animation-delay: 0s; }
+        .wave-bar:nth-child(2) { height: 20px; animation-delay: 0.1s; }
+        .wave-bar:nth-child(3) { height: 35px; animation-delay: 0.2s; }
+        .wave-bar:nth-child(4) { height: 20px; animation-delay: 0.3s; }
+        .wave-bar:nth-child(5) { height: 25px; animation-delay: 0.4s; }
+        .wave-bar:nth-child(6) { height: 15px; animation-delay: 0.5s; }
+
+        @keyframes wave {
+            0%, 100% { transform: scaleY(1); }
+            50% { transform: scaleY(0.3); }
+        }
+
+        /* 음성 인식 상태 */
+        .voice-indicator {
+            background: #eff6ff;
+            border: 1px solid #dbeafe;
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin: 12px 20px;
+            text-align: center;
+            color: #2563eb;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        .voice-indicator.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        /* 로딩 상태 */
+        .loading-indicator {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px 20px;
+            color: #6b7280;
+            font-size: 0.9rem;
+            gap: 8px;
+        }
+
+        .loading-indicator.active {
+            display: flex;
+        }
+
+        .loading-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .loading-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #6b7280;
+            animation: bounce 1.4s ease-in-out infinite both;
+        }
+
+        .loading-dot:nth-child(1) { animation-delay: -0.32s; }
+        .loading-dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes bounce {
+            0%, 80%, 100% {
+                transform: scale(0.8);
+                opacity: 0.5;
+            }
+            40% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* 입력 영역 */
+        .input-area {
+            background: white;
+            border-top: 1px solid #e5e7eb;
+            padding: 16px 20px;
+            display: flex;
+            align-items: flex-end;
+            gap: 12px;
+            box-shadow: 0 -1px 3px rgba(0,0,0,0.1);
+        }
+
+        .input-container {
+            flex: 1;
+            position: relative;
+        }
+
+        .text-input {
+            width: 100%;
+            min-height: 44px;
+            max-height: 120px;
+            padding: 12px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 22px;
+            font-size: 1rem;
+            line-height: 1.4;
+            outline: none;
+            resize: none;
+            transition: all 0.2s ease;
+            background: #f9fafb;
+        }
+
+        .text-input:focus {
+            border-color: #6366f1;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .text-input::placeholder {
+            color: #9ca3af;
+        }
+
+        /* 음성 버튼 (과제 참고 이미지 스타일) */
         .voice-button {
-            width: 60px;
-            height: 60px;
+            width: 56px;
+            height: 56px;
             border-radius: 50%;
             border: none;
-            background: #4CAF50;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
             color: white;
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             cursor: pointer;
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
             justify-content: center;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+            position: relative;
+            overflow: hidden;
         }
-        
+
+        .voice-button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 0.3s ease;
+        }
+
+        .voice-button:hover::before {
+            width: 100%;
+            height: 100%;
+        }
+
         .voice-button:hover {
-            background: #45a049;
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+        }
+
+        .voice-button.recording {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            animation: pulse-recording 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse-recording {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+            }
+            50% {
+                transform: scale(1.1);
+                box-shadow: 0 6px 20px rgba(239, 68, 68, 0.5);
+            }
+        }
+
+        .send-button {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: none;
+            background: #6366f1;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transform: scale(0.8);
+        }
+
+        .send-button.visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .send-button:hover {
+            background: #5b5bd6;
             transform: scale(1.05);
         }
-        
-        .voice-button.recording {
-            background: #f44336;
-            animation: pulse 1s infinite;
-        }
-        
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
-        
-        .text-input {
-            flex: 1;
-            padding: 15px 20px;
-            border: 1px solid #e0e0e0;
-            border-radius: 25px;
-            font-size: 1rem;
-            outline: none;
-        }
-        
-        .send-button {
-            padding: 15px 25px;
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 25px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .send-button:hover {
-            background: #5a6fd8;
-        }
-        
+
         .send-button:disabled {
-            background: #ccc;
+            background: #d1d5db;
             cursor: not-allowed;
+            transform: scale(0.8);
+            opacity: 0.5;
         }
-        
-        .voice-indicator {
-            padding: 10px 20px;
-            background: #e3f2fd;
-            border-radius: 20px;
-            margin: 10px 0;
+
+        /* 반응형 디자인 */
+        @media (max-width: 768px) {
+            .chat-area {
+                padding: 16px;
+            }
+
+            .message-content {
+                max-width: 85%;
+            }
+
+            .input-area {
+                padding: 12px 16px;
+            }
+
+            .voice-button {
+                width: 48px;
+                height: 48px;
+                font-size: 1.2rem;
+            }
+
+            .conversation-header {
+                padding: 16px;
+            }
+
+            .conversation-title h1 {
+                font-size: 1.2rem;
+            }
+        }
+
+        /* 시스템 메시지 */
+        .system-message {
             text-align: center;
-            color: #1976d2;
-        }
-        
-        .loading-indicator {
-            padding: 15px;
-            text-align: center;
-            color: #666;
-        }
-        
-        .loading-dots {
-            display: inline-block;
-        }
-        
-        .loading-dots::after {
-            content: '';
-            animation: dots 1.5s steps(3, end) infinite;
-        }
-        
-        @keyframes dots {
-            0%, 20% { content: '.'; }
-            40% { content: '..'; }
-            60%, 100% { content: '...'; }
-        }
-        
-        .back-button {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            background: rgba(255,255,255,0.2);
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 20px;
-            cursor: pointer;
-            text-decoration: none;
-            transition: all 0.3s ease;
-        }
-        
-        .back-button:hover {
-            background: rgba(255,255,255,0.3);
+            margin: 16px 0;
+            padding: 8px 16px;
+            background: #f3f4f6;
+            border-radius: 16px;
+            color: #6b7280;
+            font-size: 0.85rem;
         }
     </style>
 </head>
 <body>
-    <div class="conversation-container">
-        <!-- 헤더 -->
-        <div class="conversation-header">
-            <a href="index.html" class="back-button">← 홈으로</a>
-            <h1>🤖 AI 영어 튜터</h1>
-            <p>음성으로 대화해보세요!</p>
+    <div class="conversation-header">
+        <div class="header-left">
+            <button class="back-button" onclick="window.location.href='index.html'">←</button>
         </div>
-        
-        <!-- 채팅 영역 -->
+        <div class="conversation-title">
+            <h1>🤖 AI 영어 튜터</h1>
+            <div class="conversation-subtitle">음성으로 대화해보세요!</div>
+        </div>
+    </div>
+
+    <div class="chat-container">
         <div class="chat-area" id="chatArea">
+            <!-- 시스템 메시지 -->
+            <div class="system-message">
+                AI 튜터와 영어 대화를 시작해보세요
+            </div>
+
+            <!-- AI 환영 메시지 -->
             <div class="message ai">
                 <div class="message-avatar">🤖</div>
                 <div class="message-content">
-                    <div>안녕하세요! 저는 Ringle AI 튜터입니다. 영어로 대화를 나눠보세요! 😊</div>
-                    <div class="message-time" id="welcomeTime"></div>
+                    <div class="message-bubble">
+                        안녕하세요! 저는 Ringle AI 튜터입니다. 영어로 대화를 나눠보세요! 😊
+                    </div>
+                    <div class="message-actions">
+                        <button class="play-button" onclick="speakText('Hello! I am Ringle AI tutor. Let\\'s have a conversation in English!')">
+                            ▶
+                        </button>
+                        <span class="message-time" id="welcomeTime"></span>
+                    </div>
                 </div>
             </div>
         </div>
-        
+
         <!-- 음성 인식 상태 표시 -->
-        <div id="voiceIndicator" class="voice-indicator" style="display: none;">
-            🎤 음성을 인식하고 있습니다...
+        <div id="voiceIndicator" class="voice-indicator">
+            <span>🎤</span>
+            <span>음성을 듣고 있습니다...</span>
+            <div class="waveform">
+                <div class="wave-bar"></div>
+                <div class="wave-bar"></div>
+                <div class="wave-bar"></div>
+                <div class="wave-bar"></div>
+                <div class="wave-bar"></div>
+                <div class="wave-bar"></div>
+            </div>
         </div>
-        
+
         <!-- AI 응답 로딩 -->
-        <div id="loadingIndicator" class="loading-indicator" style="display: none;">
-            <div class="loading-dots">AI가 응답을 생성중입니다</div>
+        <div id="loadingIndicator" class="loading-indicator">
+            <span>AI가 응답을 생성중입니다</span>
+            <div class="loading-dots">
+                <div class="loading-dot"></div>
+                <div class="loading-dot"></div>
+                <div class="loading-dot"></div>
+            </div>
         </div>
-        
+
         <!-- 입력 영역 -->
         <div class="input-area">
+            <div class="input-container">
+                <textarea 
+                    id="textInput" 
+                    class="text-input" 
+                    placeholder="메시지를 입력하거나 음성 버튼을 눌러주세요..."
+                    rows="1"
+                ></textarea>
+            </div>
             <button id="voiceButton" class="voice-button" title="음성으로 말하기">
                 🎤
             </button>
-            <input type="text" id="textInput" class="text-input" placeholder="메시지를 입력하거나 음성 버튼을 눌러주세요..." />
-            <button id="sendButton" class="send-button">전송</button>
+            <button id="sendButton" class="send-button">
+                ➤
+            </button>
         </div>
     </div>
 
@@ -252,8 +573,157 @@
             initConversation();
             
             // 환영 메시지 시간 설정
-            document.getElementById('welcomeTime').textContent = new Date().toLocaleTimeString('ko-KR');
+            document.getElementById('welcomeTime').textContent = new Date().toLocaleTimeString('ko-KR', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            // 텍스트 입력 자동 리사이즈
+            const textInput = document.getElementById('textInput');
+            const sendButton = document.getElementById('sendButton');
+
+            textInput.addEventListener('input', function() {
+                // 자동 높이 조절
+                this.style.height = 'auto';
+                this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+
+                // 전송 버튼 표시/숨김
+                if (this.value.trim()) {
+                    sendButton.classList.add('visible');
+                } else {
+                    sendButton.classList.remove('visible');
+                }
+            });
+
+            // Enter 키로 전송 (Shift+Enter는 줄바꿈)
+            textInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    const message = this.value.trim();
+                    if (message) {
+                        sendMessage(message);
+                    }
+                }
+            });
         });
+
+        // 음성 인식 상태 업데이트 오버라이드
+        function showVoiceIndicator(show) {
+            const indicator = document.getElementById('voiceIndicator');
+            if (show) {
+                indicator.classList.add('active');
+            } else {
+                indicator.classList.remove('active');
+            }
+        }
+
+        // 로딩 인디케이터 업데이트 오버라이드
+        function showLoadingIndicator(show) {
+            const indicator = document.getElementById('loadingIndicator');
+            if (show) {
+                indicator.classList.add('active');
+            } else {
+                indicator.classList.remove('active');
+            }
+        }
+
+        // 메시지 추가 함수 업그레이드
+        function addMessageToChat(sender, message) {
+            const chatArea = document.getElementById('chatArea');
+            if (!chatArea) return;
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            
+            const avatar = sender === 'ai' ? '🤖' : '👤';
+            const currentTime = new Date().toLocaleTimeString('ko-KR', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            
+            let actionsHtml = '';
+            if (sender === 'ai') {
+                actionsHtml = `
+                    <div class="message-actions">
+                        <button class="play-button" onclick="speakText('${message.replace(/'/g, "\\'")}', 'en-US')" title="AI 응답 다시 듣기">▶</button>
+                        <span class="message-time">${currentTime}</span>
+                    </div>
+                `;
+            } else {
+                // 사용자 메시지에도 재생 버튼 추가
+                actionsHtml = `
+                    <div class="message-actions">
+                        <span class="message-time">${currentTime}</span>
+                        <button class="play-button" onclick="speakText('${message.replace(/'/g, "\\'")}', 'ko-KR')" title="내 메시지 다시 듣기">▶</button>
+                    </div>
+                `;
+            }
+            
+            messageDiv.innerHTML = `
+                <div class="message-avatar">${avatar}</div>
+                <div class="message-content">
+                    <div class="message-bubble">${message}</div>
+                    ${actionsHtml}
+                </div>
+            `;
+            
+            chatArea.appendChild(messageDiv);
+            
+            // 부드러운 스크롤
+            chatArea.scrollTo({
+                top: chatArea.scrollHeight,
+                behavior: 'smooth'
+            });
+
+            // 입력 필드 초기화
+            const textInput = document.getElementById('textInput');
+            const sendButton = document.getElementById('sendButton');
+            textInput.value = '';
+            textInput.style.height = 'auto';
+            sendButton.classList.remove('visible');
+        }
+
+        // TTS 함수 (재생 버튼용) - 언어 지원 추가
+        function speakText(text, lang = 'en-US') {
+            if (!window.speechSynthesis) {
+                alert('이 브라우저는 음성 재생을 지원하지 않습니다.');
+                return;
+            }
+            
+            // 기존 음성 정지
+            speechSynthesis.cancel();
+            
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = lang;
+            
+            // 언어에 따른 음성 설정
+            if (lang === 'ko-KR') {
+                utterance.rate = 0.8;   // 한국어는 조금 느리게
+                utterance.pitch = 1;
+            } else {
+                utterance.rate = 0.9;   // 영어는 기본 속도
+                utterance.pitch = 1;
+            }
+            
+            utterance.volume = 0.8;
+            
+            // 음성 재생 시작/완료 피드백
+            const playButtons = document.querySelectorAll('.play-button');
+            utterance.onstart = function() {
+                console.log('TTS 재생 시작:', text.substring(0, 30) + '...');
+            };
+            
+            utterance.onend = function() {
+                console.log('TTS 재생 완료');
+            };
+            
+            utterance.onerror = function(event) {
+                console.error('TTS 오류:', event.error);
+                alert('음성 재생 중 오류가 발생했습니다.');
+            };
+            
+            speechSynthesis.speak(utterance);
+        }
     </script>
 </body>
 </html>

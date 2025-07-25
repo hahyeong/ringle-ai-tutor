@@ -13,7 +13,7 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #f8f9fa;
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -25,10 +25,11 @@
             background: white;
             border-radius: 20px;
             padding: 40px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 25px rgba(0,0,0,0.08);
             text-align: center;
-            max-width: 400px;
+            max-width: 480px;
             width: 90%;
+            border: 1px solid #e5e7eb;
         }
 
         .logo {
@@ -38,24 +39,43 @@
 
         .login-title {
             font-size: 2rem;
-            font-weight: bold;
-            color: #333;
+            font-weight: 700;
+            color: #1f2937;
             margin-bottom: 10px;
         }
 
         .login-subtitle {
-            color: #666;
+            color: #6b7280;
             margin-bottom: 30px;
+            font-size: 1rem;
         }
 
         .user-selection {
             margin-bottom: 30px;
         }
 
+        .refresh-btn {
+            background: #6366f1;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .refresh-btn:hover {
+            background: #5b5bd6;
+            transform: translateY(-1px);
+        }
+
         .user-option {
             background: #f8f9fa;
-            border: 2px solid transparent;
-            border-radius: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 16px;
             padding: 20px;
             margin-bottom: 15px;
             cursor: pointer;
@@ -64,85 +84,149 @@
         }
 
         .user-option:hover {
-            background: #e3f2fd;
-            border-color: #2196F3;
+            background: #f1f5f9;
+            border-color: #6366f1;
             transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.1);
         }
 
         .user-option.selected {
-            background: #e3f2fd;
-            border-color: #2196F3;
+            background: #f1f5f9;
+            border-color: #6366f1;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.15);
         }
 
         .user-name {
-            font-weight: bold;
-            color: #333;
+            font-weight: 700;
+            color: #1f2937;
             margin-bottom: 5px;
+            font-size: 1.1rem;
         }
 
         .user-email {
-            color: #666;
+            color: #6b7280;
             font-size: 0.9rem;
+            margin-bottom: 5px;
         }
 
         .user-membership {
-            color: #4CAF50;
-            font-size: 0.8rem;
-            margin-top: 5px;
+            color: #6366f1;
+            font-size: 0.85rem;
+            font-weight: 600;
         }
 
         .login-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #6366f1;
             color: white;
             border: none;
             padding: 15px 40px;
             border-radius: 25px;
             font-size: 1.1rem;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
             width: 100%;
             margin-bottom: 20px;
         }
 
-        .login-btn:hover {
+        .login-btn:hover:not(:disabled) {
+            background: #5b5bd6;
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
         }
 
         .login-btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
             transform: none;
+            background: #d1d5db;
         }
 
         .demo-note {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
-            border-radius: 8px;
-            padding: 15px;
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            border-radius: 12px;
+            padding: 20px;
             margin-top: 20px;
             font-size: 0.9rem;
-            color: #856404;
+            color: #92400e;
+            text-align: left;
         }
 
         .demo-note strong {
-            color: #533101;
+            color: #78350f;
+            display: block;
+            margin-bottom: 8px;
         }
 
-        .refresh-btn {
-            background: #17a2b8;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 15px;
-            font-size: 0.9rem;
-            cursor: pointer;
-            margin-bottom: 20px;
-            transition: all 0.3s ease;
+        .demo-note ul {
+            margin-left: 20px;
+            margin-top: 8px;
         }
 
-        .refresh-btn:hover {
-            background: #138496;
+        .demo-note li {
+            margin-bottom: 4px;
+        }
+
+        .loading-state {
+            padding: 20px;
+            color: #6b7280;
+            font-style: italic;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .loading-spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #e5e7eb;
+            border-top: 2px solid #6366f1;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-state {
+            padding: 20px;
+            color: #dc2626;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 12px;
+            margin: 10px 0;
+        }
+
+        .error-state strong {
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .error-state code {
+            background: #f3f4f6;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+
+        /* 반응형 디자인 */
+        @media (max-width: 768px) {
+            .login-container {
+                padding: 30px 20px;
+                margin: 20px;
+            }
+            
+            .login-title {
+                font-size: 1.8rem;
+            }
+            
+            .user-option {
+                padding: 16px;
+            }
         }
     </style>
 </head>
@@ -155,18 +239,23 @@
         <button class="refresh-btn" onclick="loadUsers()">사용자 목록 새로고침</button>
         
         <div class="user-selection" id="userSelection">
-            <div style="padding: 20px; color: #666;">사용자 목록을 불러오는 중...</div>
+            <div class="loading-state">
+                <div class="loading-spinner"></div>
+                <span>사용자 목록을 불러오는 중...</span>
+            </div>
         </div>
         
         <button class="login-btn" id="loginBtn" disabled>로그인</button>
         
         <div class="demo-note">
-            <strong>데모 안내:</strong><br>
-            각 사용자별로 다른 멤버십 상태를 테스트할 수 있습니다.<br>
-            • 베이직: 학습 기능만 사용 가능<br>
-            • 프리미엄: 모든 기능 사용 가능<br>
-            • 횟수제: 대화 기능 제한적 사용<br>
-            • 멤버십 없음: 구매 화면 표시
+            <strong>데모 안내</strong>
+            각 사용자별로 다른 멤버십 상태를 테스트할 수 있습니다:
+            <ul>
+                <li>베이직: 학습 기능만 사용 가능</li>
+                <li>프리미엄: 모든 기능 사용 가능</li>
+                <li>횟수제: 대화 기능 제한적 사용</li>
+                <li>멤버십 없음: 구매 화면 표시</li>
+            </ul>
         </div>
     </div>
 
@@ -199,12 +288,12 @@
         // 직접 사용자 정보 조회 (fallback)
         async function loadUsersDirectly() {
             const userSelection = document.getElementById('userSelection');
-            userSelection.innerHTML = '<div style="padding: 20px; color: #666;">사용자 ID를 확인 중...</div>';
+            userSelection.innerHTML = '<div class="loading-state"><div class="loading-spinner"></div><span>사용자 ID를 확인 중...</span></div>';
             
             // 각 사용자의 멤버십 상태를 개별 조회
             const testUsers = [];
             
-            for (let id = 21; id <= 30; id++) {
+            for (let id = 17; id <= 30; id++) {
                 try {
                     const response = await fetch(`/api/v1/users/${id}/membership_status`);
                     if (response.ok) {
@@ -257,10 +346,10 @@
                 displayUsers(testUsers);
             } else {
                 userSelection.innerHTML = `
-                    <div style="padding: 20px; color: #e74c3c;">
-                        <strong>⚠️ 사용자를 찾을 수 없습니다!</strong><br>
+                    <div class="error-state">
+                        <strong>⚠️ 사용자를 찾을 수 없습니다!</strong>
                         다음 명령어를 실행해주세요:<br>
-                        <code style="background: #f8f9fa; padding: 5px; border-radius: 3px;">rails db:seed</code>
+                        <code>rails db:seed</code>
                     </div>
                 `;
             }
@@ -271,7 +360,12 @@
             const userSelection = document.getElementById('userSelection');
             
             if (userList.length === 0) {
-                userSelection.innerHTML = '<div style="padding: 20px; color: #e74c3c;">사용자가 없습니다. rails db:seed를 실행해주세요.</div>';
+                userSelection.innerHTML = `
+                    <div class="error-state">
+                        <strong>사용자가 없습니다.</strong>
+                        <code>rails db:seed</code>를 실행해주세요.
+                    </div>
+                `;
                 return;
             }
             
