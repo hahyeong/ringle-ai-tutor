@@ -17,11 +17,23 @@ async function checkMembershipStatus() {
             displayMembershipInfo(data.membership);
             enableFeatures(data.membership.features, data.membership);
             purchaseSection.style.display = 'none';
+            
+            // 멤버십 관리 버튼 표시
+            const membershipActions = document.getElementById('membershipActions');
+            if (membershipActions) {
+                membershipActions.style.display = 'flex';
+            }
         } else {
             // 멤버십이 없는 경우
             displayNoMembership();
             disableAllFeatures();
             purchaseSection.style.display = 'block';
+            
+            // 멤버십 관리 버튼 숨김
+            const membershipActions = document.getElementById('membershipActions');
+            if (membershipActions) {
+                membershipActions.style.display = 'none';
+            }
         }
     } catch (error) {
         console.error('멤버십 상태 확인 실패:', error);
@@ -57,7 +69,7 @@ function displayCurrentUser() {
                 <div style="font-size: 0.9rem; opacity: 0.9;">${userInfo.email}</div>
             </div>
             <button onclick="logout()" style="
-                background: #afafaf;
+                background: #acacac;
                 border: none;
                 color: white;
                 padding: 8px 15px;
