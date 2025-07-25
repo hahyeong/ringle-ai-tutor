@@ -10,8 +10,7 @@ class Api::V1::ConversationsController < ApplicationController
     user_message = params[:message]
     user_id = params[:user_id] || 1
 
-    # 🔧 디버깅을 위한 로깅 추가
-    Rails.logger.info "=== 대화 요청 디버깅 시작 ==="
+    Rails.logger.info "=== 대화 요청 시작 ==="
     Rails.logger.info "User ID: #{user_id}"
     Rails.logger.info "Message: #{user_message}"
 
@@ -20,18 +19,6 @@ class Api::V1::ConversationsController < ApplicationController
     membership = user.active_membership
 
     Rails.logger.info "User: #{user.name} (#{user.email})"
-    if membership
-      Rails.logger.info "Membership: #{membership.membership_type.name}"
-      Rails.logger.info "Usage Count: #{membership.usage_count}"
-      Rails.logger.info "Usage Limit: #{membership.usage_limit}"
-      Rails.logger.info "Usage Based?: #{membership.usage_based?}"
-      Rails.logger.info "Usage Exhausted?: #{membership.usage_exhausted?}"
-      Rails.logger.info "Active?: #{membership.active?}"
-    else
-      Rails.logger.info "No active membership"
-    end
-
-    Rails.logger.info "Has conversation feature?: #{user.has_feature?('conversation')}"
 
     unless user.has_feature?("conversation")
       Rails.logger.info "Access denied: No conversation feature"
@@ -41,7 +28,7 @@ class Api::V1::ConversationsController < ApplicationController
       return
     end
 
-    # 🔧 수정: 횟수제 멤버십만 횟수 체크
+    # 횟수제 멤버십 체크
     if membership&.usage_based?
       Rails.logger.info "Checking usage limits for usage-based membership"
       if membership.usage_exhausted?
@@ -55,8 +42,6 @@ class Api::V1::ConversationsController < ApplicationController
       # 사용 횟수 차감
       Rails.logger.info "Consuming usage count"
       membership.consume_usage!
-    else
-      Rails.logger.info "Unlimited membership - proceeding without usage check"
     end
 
     if user_message.blank?
@@ -65,19 +50,19 @@ class Api::V1::ConversationsController < ApplicationController
     end
 
     begin
-      # OpenAI API 호출 대신 fallback 응답 사용 (테스트용)
-      ai_response = generate_fallback_response(user_message)
+      # 실제 OpenAI API 호출
+      ai_response = call_openai_api(user_message)
 
       render json: {
         user_message: user_message,
         ai_response: ai_response,
         timestamp: Time.current,
-        note: "데모 모드: fallback 응답을 제공했습니다.",
-        # 🔧 수정: 횟수제인 경우에만 사용 횟수 정보 제공
         usage_remaining: membership&.usage_based? ? membership.usage_remaining : nil
       }
+
     rescue => error
-      Rails.logger.error "AI 응답 생성 오류: #{error.message}"
+      Rails.logger.error "OpenAI API 오류: #{error.message}"
+      Rails.logger.error error.backtrace.join("\n")
 
       # 에러 시 fallback 응답
       fallback_response = generate_fallback_response(user_message)
@@ -86,7 +71,7 @@ class Api::V1::ConversationsController < ApplicationController
         user_message: user_message,
         ai_response: fallback_response,
         timestamp: Time.current,
-        note: "에러 발생으로 기본 응답을 제공했습니다.",
+        note: "OpenAI API 오류로 기본 응답을 제공했습니다: #{error.message}",
         usage_remaining: membership&.usage_based? ? membership.usage_remaining : nil
       }
     end
@@ -94,8 +79,55 @@ class Api::V1::ConversationsController < ApplicationController
 
   private
 
+  def call_openai_api(user_message)
+    # API 키 체크
+    unless ENV["OPENAI_API_KEY"].present?
+      raise "OpenAI API 키가 설정되지 않았습니다. .env 파일에 OPENAI_API_KEY를 설정해주세요."
+    end
+
+    Rails.logger.info "OpenAI API 호출 중..."
+
+    # OpenAI API 호출
+    response = self.class.post("/chat/completions",
+      headers: {
+        "Authorization" => "Bearer #{ENV['OPENAI_API_KEY']}",
+        "Content-Type" => "application/json"
+      },
+      body: {
+        model: "gpt-3.5-turbo",
+        messages: [
+          {
+            role: "system",
+            content: "You are an AI English tutor for Korean students. Help them practice English conversation. Keep responses conversational, encouraging, and educational. Ask follow-up questions to continue the conversation."
+          },
+          {
+            role: "user",
+            content: user_message
+          }
+        ],
+        max_tokens: 150,
+        temperature: 0.7
+      }.to_json
+    )
+
+    Rails.logger.info "OpenAI API 응답 상태: #{response.code}"
+
+    if response.success?
+      ai_content = response.parsed_response.dig("choices", 0, "message", "content")
+
+      if ai_content.present?
+        Rails.logger.info "OpenAI API 응답 성공"
+        ai_content.strip
+      else
+        raise "OpenAI API 응답에서 content를 찾을 수 없습니다: #{response.parsed_response}"
+      end
+    else
+      error_message = response.parsed_response&.dig("error", "message") || "알 수 없는 오류"
+      raise "OpenAI API 호출 실패 (#{response.code}): #{error_message}"
+    end
+  end
+
   def generate_fallback_response(user_message)
-    # 사용자 메시지 패턴에 따른 적절한 응답
     case user_message.downcase
     when /hello|hi|hey/
       "Hello! How are you doing today? Let's practice some English together!"

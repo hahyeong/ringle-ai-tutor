@@ -1,43 +1,22 @@
-source "https://rubygems.org"
+source "https://rubygems.org" # Source Repository
 
-# Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
-gem "rails", "~> 7.2.2", ">= 7.2.2.1"
-# Use sqlite3 as the database for Active Record
-gem "sqlite3", ">= 1.4"
-# Use the Puma web server [https://github.com/puma/puma]
-gem "puma", ">= 5.0"
-# Build JSON APIs with ease [https://github.com/rails/jbuilder]
-# gem "jbuilder"
-# Use Redis adapter to run Action Cable in production
-# gem "redis", ">= 4.0.1"
+# Gemfile이란 Ruby on Rails 애플리케이션의 의존성을 관리하는 파일입니다. (Spring Boot의 pom.xml 혹은 build.gradle과 유사합니다.)
+# Gem이란 Ruby의 패키지로, 애플리케이션에서 사용할 수 있는 라이브러리나 프레임워크를 의미합니다. (Spring Boot의 의존성과 유사합니다.)
 
-# Use Kredis to get higher-level data types in Redis [https://github.com/rails/kredis]
-# gem "kredis"
+gem "rails", "~> 7.2.2", ">= 7.2.2.1"  # 전체 웹 프레임워크로 Rails 7.2.2 혹은 더 높은 버전을 사용합니다. (Spring Boot의 버전 관리와 유사합니다.)
 
-# Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
-# gem "bcrypt", "~> 3.1.7"
+gem "sqlite3", ">= 1.4" # 로컬 개발 DB로 SQLite3를 사용합니다. (Spring Boot의 H2 데이터베이스와 유사합니다.)
+gem "puma", ">= 5.0" # 웹 애플리케이션 서버로 Puma를 사용합니다. (Spring Boot의 내장 Tomcat과 유사)
 
-# Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[ windows jruby ]
 
-# Reduces boot times through caching; required in config/boot.rb
-gem "bootsnap", require: false
+gem "bootsnap", require: false # 부트 속도를 높이기 위해 Bootsnap을 사용합니다. (Spring Boot의 DevTools와 유사)
 
-# Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
-# gem "image_processing", "~> 1.2"
-
-# Use Rack CORS for handling Cross-Origin Resource Sharing (CORS), making cross-origin Ajax possible
-# gem "rack-cors"
+gem "dotenv-rails", groups: [ :development, :test ]
 
 group :development, :test do
-  # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
-  gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"
-
-  # Static analysis for security vulnerabilities [https://brakemanscanner.org/]
-  gem "brakeman", require: false
-
-  # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
-  gem "rubocop-rails-omakase", require: false
-
-  gem "httparty"
+  gem "debug", platforms: %i[ mri windows ], require: "debug/prelude" # 디버깅을 위한 gem입니다. (Spring Boot의 DevTools와 유사)
+  gem "brakeman", require: false # 보안 취약점 분석을 위한 Brakeman을 사용합니다.
+  gem "rubocop-rails-omakase", require: false # 코드 스타일 검사 도구인 RuboCop을 사용합니다.
+  gem "httparty" # HTTP 요청을 쉽게 처리하기 위한 HTTParty를 사용합니다. (Spring Boot의 RestTemplate 혹은 WebClient와 유사)
 end
